@@ -1,37 +1,38 @@
-# def iget_no_of_instance(ins_obj):
-#     return ins_obj.__class__.no_inst
-# class Kls(object):
-#     no_inst = 0
-#     def __init__(self):
-#         Kls.no_inst = Kls.no_inst + 1
-# ik1 = Kls()
-# ik2 = Kls()
-# print iget_no_of_instance(ik1)
+#_*_coding:utf-8_*_
+from lxml import etree
+from scrapy import Selector
 
+this_div='''
 
-# class A:
-#     def __init__(self,url):
-#         self.url = url
-#     def out(self):
-#         return self.url
-#
-#
-# a = A('news.163.com')
-# print a.out()
-#
-# b = a.__class__('www.bccn.net')
-# print b.out()
-# print a.out()
-#
-#
-# print A
-# print a.__class__
-# print
+<div id="zwlist">
+                
+                <div class="zwli clearfix" id="zwli8494972927" data-huifuid="8494972927" data-huifuuid="7661094278080258">
+                    <div class="zwjubao"><a href="javascript:;" target="_self" class="graylink" data-replyid="8494972927">举报本回复</a></div>
+                    <div class="zwliimg">
+                        <a href="http://iguba.eastmoney.com/7661094278080258"><img src="http://avator.eastmoney.com/qface/7661094278080258/30" data-popper="7661094278080258" /></a> 
+                    </div>
+                    <div class="zwlitx">
+                        <div class="zwlitxt">
+                            
+                            <div class="zwlianame">
+                                <span class="zwnick"><a href="http://iguba.eastmoney.com/7661094278080258"  data-popper="7661094278080258" data-poptype="1">屋脊飞</a></span> <span class="influence" data-uid="7661094278080258"></span>
+                            </div>
+                            <div class="zwlitime">发表于 2017-09-06  05:05:57</div>
 
-a=[1,2,3,4,5]
-b=[6,7,8,9,0]
-c=[[1,2],[3,4],[5,6],[7,8]]
+                            
+                            <div class="zwlitext stockcodec">对股市懂得挺多的人，越不轻易对市场行情发表意见。 </div>
+                            <div class="zwlitxtbc">
+                                <div class="zwlitxb"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-aa=[x+y for x in a for y in b]
-cc=[x for i in c for x in i]
-print cc
+'''
+
+# datalxml=etree.HTML(this_div)
+# print datalxml.xpath('//div[@id="zwlist"]//div[@class="zwlitext stockcodec"]/@class')[0]
+
+sel=Selector(text=this_div,type='html')
+
+print sel.xpath('//div[@id="zwlist"]//div[@class="zwlitext stockcodec"]/').extract()
