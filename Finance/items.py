@@ -12,3 +12,16 @@ class FinanceItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     pass
+
+
+
+class forumdata(scrapy.Item):
+    content=scrapy.Field()
+    publish_user=scrapy.Field()
+    publish_time=scrapy.Field()
+    data_proper=scrapy.Field()
+    publish_user_href=scrapy.Field()
+    reply_nodes=scrapy.Field()
+    topicid=scrapy.Field()
+    url=scrapy.Field()
+
