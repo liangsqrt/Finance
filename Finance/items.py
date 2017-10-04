@@ -24,4 +24,8 @@ class forumdata(scrapy.Item):
     reply_nodes=scrapy.Field()
     topicid=scrapy.Field()
     url=scrapy.Field()
+    read_count=scrapy.Field()
+    reply_count=scrapy.Field()
+    stockcode=scrapy.Field()
+    other_info=scrapy.Field()
 

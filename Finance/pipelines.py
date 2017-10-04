@@ -19,7 +19,7 @@ class DFCFWPipeline(object):
     def __init__(self):
         self.client=pymongo.MongoClient('localhost',27017)
         self.COL=self.client['Finance']
-        self.DB=self.COL['DFCFW']
+        self.DB=self.COL['DFCFW10_4']
 
     def process_item(self,item,spider):
         if isinstance(item,forumdata):
