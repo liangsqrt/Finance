@@ -17,6 +17,7 @@ while True:
     print db.find().count()
 
 
+
     client.close()
     time.sleep(2)
 
