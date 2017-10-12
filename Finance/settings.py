@@ -90,4 +90,4 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 
-Finance_tieba='/media/liang/Data/OriginalFile'
+Finance_DFCFW_tieba_path='E:/data_ll'

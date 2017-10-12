@@ -26,8 +26,12 @@ class DFCFW_persion_info(scrapy.Spider):
 
 
     def start_requests(self):
-        for url in self.urls:
-            yield scrapy.Request(url=url,headers=self.headers,callback=self.create_uid_from_mongodb)
 
-    def create_uid_from_mongodb(self):
-        client=redis.Redis(host='localhost',port=6379)
+        client = redis.Redis(host='localhost', port=6379)
+        while True:
+            url_to_visit=client.spop('publish_user_href')
+            yield scrapy.Request(url=url_to_visit,headers=self.headers,callback=self.deal_person_page)
+
+
+    def deal_person_page(self,response):
+        pass

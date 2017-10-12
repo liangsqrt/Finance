@@ -29,3 +29,9 @@ class forumdata(scrapy.Item):
     stockcode=scrapy.Field()
     other_info=scrapy.Field()
 
+
+class forumhtmlpage(scrapy.Item):
+    mainurl=scrapy.Field()
+    datetime=scrapy.Field()
+    timestrimp=scrapy.Field()
+    content=scrapy.Field()

@@ -7,8 +7,9 @@ import re
 import requests
 import json
 from Finance.items import forumdata
-
-
+from Finance.items import forumhtmlpage
+import datetime
+import time
 
 
 
@@ -24,7 +25,7 @@ class CrawlSpider(CrawlSpider):
     name = 'eastmoney'
     allowed_domains = ['eastmoney.com']
     # start_urls = ['http://www.eastmoney.com/','http://guba.eastmoney.com/default,{},f_1.html.html'.format(str(i) for i in range(2,527207))]
-    start_urls = ['http://guba.eastmoney.com/default_{}.html'.format(str(i)) for i in range(500,527207)]
+    start_urls = ['http://guba.eastmoney.com/default_{}.html'.format(str(i)) for i in range(1,527207)]
 
 
     rules = (
@@ -62,6 +63,17 @@ class CrawlSpider(CrawlSpider):
 
 
     def deal_page_contain_content(self,response):
+
+
+        first_page_html={
+            'mainurl':response.url,
+            'datetime':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'timestrimp':time.time(),
+            'content':{
+                response.url:response.body
+
+            }
+        }
 
         reply_data_this_page=[]
         reply_huifuuid_this_page=[]#根据这两个列表来获得点赞数
@@ -127,6 +139,7 @@ class CrawlSpider(CrawlSpider):
                 print e
         #再次统计点赞数也可以将来根据数据库中的缓存舒俱来更新，也可以在这里就更新
 
+
         url_dianzan='http://iguba.eastmoney.com/interf/guba.aspx?&action=getreplylikegd&id='+topicid+'&replyids='
         if reply_huifuid_this_page:
             for num,comment_id in enumerate(reply_huifuid_this_page):
@@ -140,9 +153,6 @@ class CrawlSpider(CrawlSpider):
                     reply_data_this_page[num]['like_count']=count_info['count']
             except Exception as e:
                 print e
-
-
-
 
 
         next_page_div= response.xpath('//body').re(r'<div class="pager talc zwpager">[\S|\s]*?<\/div>')
@@ -167,7 +177,8 @@ class CrawlSpider(CrawlSpider):
                     'read_count':view_num,
                     'reply_count':comment_num,
                     'stockcode':stockcode,
-                    'other_info':other_info
+                    'other_info':other_info,
+                    'html_page':first_page_html
 
                 }
                 yield scrapy.Request(url=nex_page_url,callback=self.deal_page_contain_content_fallow,method='get',headers=self.headers,meta=the_data_send_to_meta)
@@ -186,8 +197,16 @@ class CrawlSpider(CrawlSpider):
                 thisitem['reply_count']=comment_num
                 thisitem['stockcode']=stockcode
                 thisitem['other_info']=other_info
-
                 yield thisitem
+
+
+
+                firstpage_item=forumhtmlpage()
+                firstpage_item['mainurl']=response.url
+                firstpage_item['datetime']=first_page_html['datetime']
+                firstpage_item['timestrimp']=first_page_html['timestrimp']
+                firstpage_item['content']=first_page_html['content']
+                yield firstpage_item
 
         else:
             thisitem=forumdata()
@@ -205,6 +224,13 @@ class CrawlSpider(CrawlSpider):
             thisitem['other_info']=other_info
             yield thisitem
 
+            firstpage_item = forumhtmlpage()
+            firstpage_item['mainurl'] = response.url
+            firstpage_item['datetime'] = first_page_html['datetime']
+            firstpage_item['timestrimp'] = first_page_html['timestrimp']
+            firstpage_item['content'] = first_page_html['content']
+            yield firstpage_item
+
         pass
 
 
@@ -217,6 +243,12 @@ class CrawlSpider(CrawlSpider):
         reply_data_this_page=[]
         reply_huifuuid_this_page=[]#根据这两个列表来获得点赞数
         reply_huifuid_this_page=[]
+
+        fallow_page_html={
+            response.url:response.body
+        }
+
+
 
         reply_list_div = response.xpath('//div[@id="zwlist"]/div[@class="zwli clearfix"]')
         for num, one_reply in enumerate(reply_list_div):
@@ -270,6 +302,11 @@ class CrawlSpider(CrawlSpider):
                 print e
 
         next_page_div = response.xpath('//body').re(r'<div class="pager talc zwpager">[\S|\s]*?<\/div>')
+
+        this_page_html = response.meta['html_page']
+        this_page_html['content'].update(fallow_page_html)
+
+
         if next_page_div:
             Re_find_page_info = re.compile(
                 r'data-page="(\S{2,6}\,\S{2,6}\,\d{6,12}\_)\|(\d{1,8})\|(\d{1,3})\|(\d{1,5})')
@@ -293,7 +330,8 @@ class CrawlSpider(CrawlSpider):
                         'read_count':response.meta['read_count'],
                         'reply_count':response.meta['reply_count'],
                         'other_info':response.meta['other_info'],
-                        'stockcode':response.meta['stockcode']
+                        'stockcode':response.meta['stockcode'],
+                        'html_page':this_page_html
 
                     }
                 except Exception as e:
@@ -316,6 +354,15 @@ class CrawlSpider(CrawlSpider):
                 thisitem['stockcode']=response.meta['stockcode']
                 thisitem['other_info']=response.meta['other_info']
                 yield thisitem
+
+
+                fallowpage_item=forumhtmlpage()
+                fallowpage_item['mainurl']=this_page_html['mainurl']
+                fallowpage_item['datetime']=this_page_html['datetime']
+                fallowpage_item['timestrimp']=this_page_html['timestrimp']
+                fallowpage_item['content']=this_page_html['content']
+                yield fallowpage_item
+
         else:
             thisitem = forumdata()
             thisitem['content'] = response.meta['content']
@@ -331,3 +378,10 @@ class CrawlSpider(CrawlSpider):
             thisitem['stockcode']=response.meta['stockcode']
             thisitem['other_info']=response.meta['other_info']
             yield thisitem
+
+            fallowpage_item = forumhtmlpage()
+            fallowpage_item['mainurl'] = this_page_html['mainurl']
+            fallowpage_item['datetime'] = this_page_html['datetime']
+            fallowpage_item['timestrimp'] = this_page_html['timestrimp']
+            fallowpage_item['content'] = this_page_html['content']
+            yield fallowpage_item
