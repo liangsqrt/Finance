@@ -6,6 +6,12 @@
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+import redis
+
+redis_connection_pool=redis.ConnectionPool(host='localhost', port=6379)
+redis1 = redis.Redis(connection_pool=redis_connection_pool)
+
+
 
 
 class FinanceSpiderMiddleware(object):
@@ -54,3 +60,8 @@ class FinanceSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class proxyMiddleware(object):
+    def process_request(self,request,spider):
+        proxy=redis1.lpop()
