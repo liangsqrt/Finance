@@ -19,4 +19,5 @@ def checkfile(filepath):
 
 if __name__ == '__main__':
 #     DFCFW_forumdata_name(url='www.baidu.com',datetime='12:12 12')
-    checkfile('E:/matlab 2014a/appdata/data/data')
+#     checkfile('E:/matlab 2014a/appdata/data/data')
+    pass
