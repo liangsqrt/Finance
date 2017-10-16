@@ -47,7 +47,8 @@ class proxy_server:
                         'proxy':i
                     }
                     if self.redis1.llen(self.proxy_list_name)<500:
-                        self.redis1.lpush(self.proxy_list_name,proxy_good_dict)
+                        proxy_good_dict_json=json.dumps(proxy_good_dict)
+                        self.redis1.lpush(self.proxy_list_name,proxy_good_dict_json)
                 else:
                     pass
             except Exception as e:

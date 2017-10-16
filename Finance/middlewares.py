@@ -7,10 +7,11 @@
 
 from scrapy import signals
 import redis
+import json
 
 redis_connection_pool=redis.ConnectionPool(host='localhost', port=6379)
 redis1 = redis.Redis(connection_pool=redis_connection_pool)
-
+redis_proxy_list_name='proxy_dict_list'
 
 
 
@@ -62,16 +63,26 @@ class FinanceSpiderMiddleware(object):
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-class proxyMiddleware(object):
+class HttpProxyMiddleware(object):
     def process_request(self,request,spider):
         while True:
-            proxy_dict=redis1.rpop()
-            if proxy_dict['used_times']<300:
-                proxy=proxy_dict['proxy']
-                proxy_dict['used_times']+=1
-                redis1.lpush(proxy_dict)
+            try:
+                proxy_dict_raw=redis1.rpop(redis_proxy_list_name)
+                if not proxy_dict_raw:
+                    break
+                else:
+                    proxy_dict=json.loads(proxy_dict_raw)
+                if proxy_dict['used_times']<300:
+                    proxy=proxy_dict['proxy']
+                    proxy_dict['used_times']+=1
+                    proxy_dict_json=json.dumps(proxy_dict)
+                    redis1.lpush(redis_proxy_list_name,proxy_dict_json)
+                    proxy = 'http://' + proxy
+                    request.meta['proxy'] = proxy
+                    break
+                else:
+                    pass
+            except Exception as e:
+                print e
+            finally:
                 break
-            else:
-                pass
-        proxy='http://'+proxy
-        request.meta['proxies']=proxy
