@@ -6,7 +6,7 @@ import os
 
 def DFCFW_forumdata_name(url,datetime):
     urlmd5=hashlib.md5(url).hexdigest()
-    date=datetime.split(' ')[0]
+    date=str(datetime.split(' ')[0])
     return date,urlmd5
 
 

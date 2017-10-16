@@ -19,7 +19,7 @@ NEWSPIDER_MODULE = 'Finance.spiders'
 #USER_AGENT = 'Finance (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 64
@@ -46,9 +46,9 @@ CONCURRENT_REQUESTS = 64
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'Finance.middlewares.FinanceSpiderMiddleware': 543,
-#}
+SPIDER_MIDDLEWARES = {
+   'Finance.middlewares.FinanceProxySaveMiddleware': 300,
+}
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html

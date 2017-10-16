@@ -9,6 +9,7 @@ from scrapy import signals
 import redis
 import json
 
+
 redis_connection_pool=redis.ConnectionPool(host='localhost', port=6379)
 redis1 = redis.Redis(connection_pool=redis_connection_pool)
 redis_proxy_list_name='proxy_dict_list'
@@ -75,10 +76,11 @@ class HttpProxyMiddleware(object):
                 if proxy_dict['used_times']<300:
                     proxy=proxy_dict['proxy']
                     proxy_dict['used_times']+=1
-                    proxy_dict_json=json.dumps(proxy_dict)
-                    redis1.lpush(redis_proxy_list_name,proxy_dict_json)
+                    # proxy_dict_json=json.dumps(proxy_dict)
+                    # redis1.lpush(redis_proxy_list_name,proxy_dict_json)
                     proxy = 'http://' + proxy
                     request.meta['proxy'] = proxy
+                    request.meta['info_proxy']=proxy_dict
                     break
                 else:
                     pass
@@ -86,3 +88,26 @@ class HttpProxyMiddleware(object):
                 print e
             finally:
                 break
+    # def process_response(self,request,response,spider):
+    #     try:
+    #         if response.status not in [403,429]:
+    #             proxy_dict=response.meta['info_proxy']
+    #             proxy_dict_json=json.dumps(proxy_dict)
+    #             redis1.lpush(redis_proxy_list_name,proxy_dict_json)
+    #     except Exception as e:
+    #         print e
+    #
+    #     return response
+
+class FinanceProxySaveMiddleware(object):
+    # def process_response(self,request,response,spider):
+    def process_spider_input(self, response, spider):
+        try:
+            if response.status not in [403,429]:
+                proxy_dict=response.meta['info_proxy']
+                proxy_dict_json=json.dumps(proxy_dict)
+                redis1.lpush(redis_proxy_list_name,proxy_dict_json)
+        except Exception as e:
+            print e
+
+        return response
