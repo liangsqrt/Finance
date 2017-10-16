@@ -99,6 +99,9 @@ class CrawlSpider(CrawlSpider):
         publish_user_href=publish_user_info_div.xpath('//div[@id="zwconttb"]/div[@id="zwconttbn"]/strong/a/@href').extract()[0]
         publish_user_name=publish_user_info_div.xpath('//div[@id="zwconttb"]/div[@id="zwconttbn"]/strong/a/text()').extract()[0]
         publish_time=publish_user_info_div.xpath('//div[@class="zwfbtime"]/text()').re('(\d{4}\-\d{1,2}\-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2})')[0]
+
+        first_page_html['publish_time']=publish_time
+
         try:
             data_proper=publish_user_info_div.re(r'data-popper="(\d*)"')[0]
         except :
@@ -206,6 +209,7 @@ class CrawlSpider(CrawlSpider):
                 firstpage_item['datetime']=first_page_html['datetime']
                 firstpage_item['timestrimp']=first_page_html['timestrimp']
                 firstpage_item['content']=first_page_html['content']
+                firstpage_item['publish_time']=first_page_html['publish_time']
                 yield firstpage_item
 
         else:
@@ -229,6 +233,7 @@ class CrawlSpider(CrawlSpider):
             firstpage_item['datetime'] = first_page_html['datetime']
             firstpage_item['timestrimp'] = first_page_html['timestrimp']
             firstpage_item['content'] = first_page_html['content']
+            firstpage_item['publish_time']=first_page_html['publish_time']
             yield firstpage_item
 
         pass
@@ -361,6 +366,7 @@ class CrawlSpider(CrawlSpider):
                 fallowpage_item['datetime']=this_page_html['datetime']
                 fallowpage_item['timestrimp']=this_page_html['timestrimp']
                 fallowpage_item['content']=this_page_html['content']
+                fallowpage_item['publish_time']=this_page_html['publish_time']
                 yield fallowpage_item
 
         else:
@@ -384,4 +390,5 @@ class CrawlSpider(CrawlSpider):
             fallowpage_item['datetime'] = this_page_html['datetime']
             fallowpage_item['timestrimp'] = this_page_html['timestrimp']
             fallowpage_item['content'] = this_page_html['content']
+            fallowpage_item['publish_time']=this_page_html['publish_time']
             yield fallowpage_item

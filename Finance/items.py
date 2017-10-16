@@ -35,3 +35,4 @@ class forumhtmlpage(scrapy.Item):
     datetime=scrapy.Field()
     timestrimp=scrapy.Field()
     content=scrapy.Field()
+    publish_time=scrapy.Field()

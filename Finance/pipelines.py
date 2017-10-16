@@ -36,7 +36,7 @@ class DFCFWPipeline(object):
 
         if isinstance(item,forumhtmlpage):
             forumhtmlpage_dict=dict(item)
-            date,urlmd5=create_filename.DFCFW_forumdata_name(url=forumhtmlpage_dict['mainurl'],datetime=forumhtmlpage_dict['datetime'])
+            date,urlmd5=create_filename.DFCFW_forumdata_name(url=forumhtmlpage_dict['mainurl'],datetime=forumhtmlpage_dict['publish_time'])
             file_finally=Finance_DFCFW_tieba_path+'/'+date+'/'+urlmd5
             create_filename.checkfile(file_finally)
             with open(file_finally,'w+') as fl:
