@@ -107,7 +107,11 @@ class FinanceProxySaveMiddleware(object):
                 proxy_dict=response.meta['info_proxy']
                 proxy_dict_json=json.dumps(proxy_dict)
                 redis1.lpush(redis_proxy_list_name,proxy_dict_json)
+            else:
+                return None
         except Exception as e:
             print e
 
-        return response
+
+    def process_spider_exception(self,response, exception, spider):
+        return None
