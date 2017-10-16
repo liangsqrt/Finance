@@ -91,4 +91,5 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 
-Finance_DFCFW_tieba_path='E:/data_ll'
+# Finance_DFCFW_tieba_path='E:/data_ll'#/media/liang/新加卷3
+Finance_DFCFW_tieba_path='/media/liang/新加卷3'
