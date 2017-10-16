@@ -64,4 +64,14 @@ class FinanceSpiderMiddleware(object):
 
 class proxyMiddleware(object):
     def process_request(self,request,spider):
-        proxy=redis1.lpop()
+        while True:
+            proxy_dict=redis1.rpop()
+            if proxy_dict['used_times']<300:
+                proxy=proxy_dict['proxy']
+                proxy_dict['used_times']+=1
+                redis1.lpush(proxy_dict)
+                break
+            else:
+                pass
+        proxy='http://'+proxy
+        request.meta['proxies']=proxy

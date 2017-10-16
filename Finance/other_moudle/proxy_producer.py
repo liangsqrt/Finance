@@ -6,7 +6,7 @@ import time
 import random
 import sys
 import threading
-
+import redis
 
 
 
@@ -23,6 +23,11 @@ class proxy_server:
         self.IP_addr = "127.0.0.1"
         self.port = 20100
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        self.pool1 = redis.ConnectionPool(host='localhost', port=6379)
+        self.redis1 = redis.Redis(connection_pool=self.pool1)
+
+
         # self.callback = callback
         # try:
         #     self.s.bind((host, port))
@@ -77,6 +82,8 @@ class proxy_server:
                         elif response=='sucessed':
                             self.s.close()
                             break
+                else:
+                    self.s.close()
             except Exception as e:
                 print e
                 pass
@@ -84,6 +91,7 @@ class proxy_server:
 
 
     def get_proxy(self):
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect((self.IP_addr,self.port))
         while True:
             try:
@@ -147,4 +155,5 @@ class proxy_server:
 
 if __name__ == '__main__':
     thisclass=proxy_server()
-    thisclass.run()
+    # thisclass.run()
+    thisclass.get_proxy()

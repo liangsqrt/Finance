@@ -21,6 +21,7 @@ class Sockerserver:
             conn,addr=self.socket.accept()
             data_recv=conn.recv(1024)
             try:
+                print data_recv
                 data=json.loads(data_recv)
                 data_act=data['act']
                 if data_act=='save_proxy':
@@ -39,7 +40,7 @@ class Sockerserver:
                     while True:
                         index=random.randint(len(self.proxy_list))
                         proxy_dict=self.proxy_list[index]
-                        if proxy_dict['used_times']<5:
+                        if proxy_dict['used_times']<50:
                             proxy=proxy_dict['proxy']
                             self.proxy_list[index]['used_times']+=1
                             conn.send(proxy)
