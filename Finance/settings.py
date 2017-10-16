@@ -46,16 +46,16 @@ CONCURRENT_REQUESTS = 64
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-SPIDER_MIDDLEWARES = {
-   'Finance.middlewares.FinanceProxySaveMiddleware': 300,
-}
+# SPIDER_MIDDLEWARES = {
+#    'Finance.middlewares.FinanceProxySaveMiddleware': 300,
+# }
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-   # 'Finance.middlewares.MyCustomDownloaderMiddleware': 543,
-   'Finance.middlewares.HttpProxyMiddleware':542,
-}
+# DOWNLOADER_MIDDLEWARES = {
+#    # 'Finance.middlewares.MyCustomDownloaderMiddleware': 543,
+#    'Finance.middlewares.HttpProxyMiddleware':542,
+# }
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html

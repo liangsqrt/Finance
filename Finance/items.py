@@ -40,3 +40,16 @@ class forumhtmlpage(scrapy.Item):
 class DFCFWpublisher(scrapy.Item):
     publish_user_href=scrapy.Field()
     publish_user_name=scrapy.Field()
+
+class DFCFWpersionInfo(scrapy.Item):
+    publish_user_name=scrapy.Field()
+    publish_user_href=scrapy.Field()
+    zixuan_num=scrapy.Field()
+    guanzhu_num=scrapy.Field()
+    fensi=scrapy.Field()
+    influence_data=scrapy.Field()
+    forumage=scrapy.Field()
+    register_time=scrapy.Field()
+    attention_field=scrapy.Field()
+    attention_field_url=scrapy.Field()
+    persion_abstract=scrapy.Field()

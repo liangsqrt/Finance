@@ -26,7 +26,7 @@ class CrawlSpider(CrawlSpider):
     name = 'eastmoney'
     allowed_domains = ['eastmoney.com']
     # start_urls = ['http://www.eastmoney.com/','http://guba.eastmoney.com/default,{},f_1.html.html'.format(str(i) for i in range(2,527207))]
-    start_urls = ['http://guba.eastmoney.com/default_{}.html'.format(str(i)) for i in range(1,527207)]
+    start_urls = ['http://guba.eastmoney.com/default_{}.html'.format(str(i)) for i in range(50,527207)]
 
 
     rules = (
@@ -105,6 +105,10 @@ class CrawlSpider(CrawlSpider):
         publish_user_item['publish_user_href']=publish_user_href
         publish_user_item['publish_user_name']=publish_user_name
         yield publish_user_item
+
+
+        # yield scrapy.Request(url=publish_user_href,headers=self.headers,callback=self.deal_page_persion_main_info)
+
 
 
         first_page_html['publish_time']=publish_time
@@ -427,3 +431,60 @@ class CrawlSpider(CrawlSpider):
             fallowpage_item['content'] = this_page_html['content']
             fallowpage_item['publish_time']=this_page_html['publish_time']
             yield fallowpage_item
+
+
+
+    def deal_page_persion_main_info(self,response):
+        publish_user_photo_href=response.xpath('//div[@class="gbbody"]/div[@id="mainbody"]/div[@class="tainfo"]/div[@class="photo"]/img/@src').extract()[0]
+        publish_user_name=response.xpath('//div[@class="tainfos"]/div[@class="taname"]/text()').extract()[0].strip()
+        zixuan_guanzhu_fensi=response.xpath('//div[@class="gbbody"]/div[@id="mainbody"]/div[@class="tainfo"]/div[@class="photo"]/div[@class="tanums"]/table/tr/td/a/em/text()').extract()
+        zixuan_num=zixuan_guanzhu_fensi[0]
+        guanzhu_num=zixuan_guanzhu_fensi[1]
+        fensi_num=zixuan_guanzhu_fensi[2]
+        influence_data=response.xpath('//div[@class="tainfos"]/div[@id="influence"]/span[@class="stars"]/@data-influence').extract()[0]
+        forumage_register_time= response.xpath('//div[@class="tainfos"]/div[@id="influence"]/span/text()').extract()
+        forumage=forumage_register_time[0]
+        register_time=forumage_register_time[1]
+
+        attention_field=response.xpath('//div[@class="tainfos"]/div[@id="influence"]/a/text()').extract()[0]
+        attention_field_url=response.xpath('//div[@class="tainfos"]/div[@id="influence"]/a/@href').extract()[0]
+
+        persion_abstract=response.xpath('//div[@class="taintro"]/text()').extract()[0].strip()
+
+
+        persion_basic_info={
+            'url':response.url,
+            'publish_user_href':publish_user_photo_href,
+            'publish_user_name':publish_user_name,
+            'zixuan_num':zixuan_num,
+            'guanzhu_num':guanzhu_num,
+            'fensi_num':fensi_num,
+            'influence_data':influence_data,
+            'forumage':forumage,
+            'register_time':register_time,
+            'attention_field':attention_field,
+            'attention_field_url':attention_field_url,
+            'persion_abstact':persion_abstract,
+            'persion_basic_web_html':response.body
+        }
+        meta=response.meta
+        meta['persion_basic_info']=persion_basic_info
+        yield scrapy.Request(url=response.url+'/fans',headers=self.headers,callback=self.deal_page_persion_fans_info,meta=meta)
+
+
+
+    def deal_page_persion_fans_info(self,response):
+        persion_basic_info=response.meta['persion_basic_info']
+        maybejson = response.xpath('//body').re('var itemdata = (.*)')
+        maybejson2 = maybejson[0].strip().rstrip(';')
+        datajson=json.loads(maybejson2)
+        fans_list=datajson['re']
+        persion_basic_info['fans_list']=fans_list
+        persion_basic_info['persion_fans_basic_web_html']=response.body
+        meta=response.meta
+        meta['persion_basic_info']=persion_basic_info
+        yield scrapy.Request(url=persion_basic_info['url']+'tafollow',headers=self.headers,callback=self.deal_page_persion_tafollow,meta=meta)
+
+
+    def deal_page_persion_tafollow(self,response):
+        persion_basic_info=response.meta['persion_basic_info']
