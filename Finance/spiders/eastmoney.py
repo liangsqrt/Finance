@@ -8,6 +8,7 @@ import requests
 import json
 from Finance.items import forumdata
 from Finance.items import forumhtmlpage
+from Finance.items import DFCFWpublisher
 import datetime
 import time
 
@@ -100,6 +101,12 @@ class CrawlSpider(CrawlSpider):
         publish_user_name=publish_user_info_div.xpath('//div[@id="zwconttb"]/div[@id="zwconttbn"]/strong/a/text()').extract()[0]
         publish_time=publish_user_info_div.xpath('//div[@class="zwfbtime"]/text()').re('(\d{4}\-\d{1,2}\-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2})')[0]
 
+        publish_user_item=DFCFWpublisher()
+        publish_user_item['publish_user_href']=publish_user_href
+        publish_user_item['publish_user_name']=publish_user_name
+        yield publish_user_item
+
+
         first_page_html['publish_time']=publish_time
 
         try:
@@ -138,6 +145,13 @@ class CrawlSpider(CrawlSpider):
                 reply_data_this_page.append(this_reply_info)
                 reply_huifuid_this_page.append(reply_data_huifuid)
                 reply_huifuuid_this_page.append(reply_data_huifuuid)
+
+                publish_user_item = DFCFWpublisher()
+                publish_user_item['publish_user_href'] = reply_publish_user_href
+                publish_user_item['publish_user_name'] = reply_publish_user
+                yield publish_user_item
+
+
             except Exception as e:
                 print e
         #再次统计点赞数也可以将来根据数据库中的缓存舒俱来更新，也可以在这里就更新
@@ -186,6 +200,14 @@ class CrawlSpider(CrawlSpider):
                 }
                 yield scrapy.Request(url=nex_page_url,callback=self.deal_page_contain_content_fallow,method='get',headers=self.headers,meta=the_data_send_to_meta)
 
+
+                publish_user_item = DFCFWpublisher()
+                publish_user_item['publish_user_href'] = publish_user_href
+                publish_user_item['publish_user_name'] = publish_user_name
+                yield publish_user_item
+
+
+
             else:
                 thisitem = forumdata()
                 thisitem['content'] = content_result
@@ -201,6 +223,13 @@ class CrawlSpider(CrawlSpider):
                 thisitem['stockcode']=stockcode
                 thisitem['other_info']=other_info
                 yield thisitem
+
+
+
+                publish_user_item = DFCFWpublisher()
+                publish_user_item['publish_user_href'] = publish_user_href
+                publish_user_item['publish_user_name'] = publish_user_name
+                yield publish_user_item
 
 
 
@@ -235,6 +264,12 @@ class CrawlSpider(CrawlSpider):
             firstpage_item['content'] = first_page_html['content']
             firstpage_item['publish_time']=first_page_html['publish_time']
             yield firstpage_item
+
+
+            publish_user_item = DFCFWpublisher()
+            publish_user_item['publish_user_href'] = publish_user_href
+            publish_user_item['publish_user_name'] = publish_user_name
+            yield publish_user_item
 
         pass
 

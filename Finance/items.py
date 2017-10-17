@@ -36,3 +36,7 @@ class forumhtmlpage(scrapy.Item):
     timestrimp=scrapy.Field()
     content=scrapy.Field()
     publish_time=scrapy.Field()
+
+class DFCFWpublisher(scrapy.Item):
+    publish_user_href=scrapy.Field()
+    publish_user_name=scrapy.Field()

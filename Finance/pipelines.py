@@ -7,6 +7,7 @@
 
 from Finance.items import forumdata
 from Finance.items import forumhtmlpage
+from Finance.items import DFCFWpublisher
 from settings import Finance_DFCFW_tieba_path
 from Finance.other_moudle import create_filename
 import pymongo
@@ -25,6 +26,7 @@ class DFCFWPipeline(object):
         self.COL=self.client['Finance']
         self.DB=self.COL['DFCFW10_4']
         self.DB_DFCFW_relation=self.COL['DFCFW_md5_url']
+        self.DB_publish_user=self.COL['DFCFW_publish_user']
 
     def process_item(self,item,spider):
         if isinstance(item,forumdata):
@@ -46,6 +48,14 @@ class DFCFWPipeline(object):
                         urlmd5:forumhtmlpage_dict['mainurl']#mongodb里边key的值不可以是.的内容
                     }
                 )
+
+
+        if isinstance(item,DFCFWpublisher):
+            try:
+                self.DB_publish_user.insert(dict(item))
+                print 'publish_user抓取到一个'
+            except Exception as e:
+                print e
 
     def add_index(self):
         self.DB.ensure_index('url',unique=True)
