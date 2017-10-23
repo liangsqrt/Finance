@@ -30,9 +30,9 @@ class CrawlSpider(CrawlSpider):
 
 
     rules = (
-        Rule(LinkExtractor(allow=r'.*?eastmoney.com/list\,.*'), callback='parse_item', follow=True),
-        Rule(LinkExtractor(allow='http://guba.eastmoney.com/news\,\d{6}\,\d{8,10}[_\d]\.html'),callback='deal_page_contain_content',follow=True),
-        Rule(LinkExtractor(allow='http://guba.eastmoney.com/default_\d*.html'),callback='parse_item',follow=True),
+        Rule(LinkExtractor(allow=r'.*?eastmoney.com/list\,.*'), callback='parse_item', follow=False),#True该False
+        Rule(LinkExtractor(allow='http://guba.eastmoney.com/news\,\d{6}\,\d{8,10}[_\d]\.html'),callback='deal_page_contain_content',follow=False),#True该False
+        # Rule(LinkExtractor(allow='http://guba.eastmoney.com/default_\d*.html'),callback='parse_item',follow=False),#True改False
         # Rule(LinkExtractor(allow='http://guba.eastmoney.com/news\,\S{3,7}\,\d{8,10}[_\d]\.html'),callback='parse_item',follow=True),
         # Rule(LinkExtractor(allow='default,\d*,f_1.html'), callback='parse_item', follow=True),
     )
