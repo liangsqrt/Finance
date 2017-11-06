@@ -26,7 +26,7 @@ class CrawlSpider(CrawlSpider):
     name = 'eastmoney'
     allowed_domains = ['eastmoney.com']
     # start_urls = ['http://www.eastmoney.com/','http://guba.eastmoney.com/default,{},f_1.html.html'.format(str(i) for i in range(2,527207))]
-    start_urls = ['http://guba.eastmoney.com/default_{}.html'.format(str(i)) for i in range(100,527207)]
+    start_urls = ['http://guba.eastmoney.com/default_{}.html'.format(str(i)) for i in range(21000,527207)]
 
 
     rules = (
@@ -46,6 +46,11 @@ class CrawlSpider(CrawlSpider):
         'Proxy-Connection':'closed',
         'Connection':'closed'
     }
+
+
+    def start_requests(self):
+        for url in self.start_urls:
+            yield scrapy.Request(url=url)
 
     def parse_item(self, response):
         i = {}
