@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from scrapy.linkextractors import LinkExtractor
-from scrapy.spiders import CrawlSpider, Rule
+# from scrapy.spiders import CrawlSpider, Rule
+from scrapy.spiders import Rule
+from scrapy_redis.spiders import RedisCrawlSpider
 from scrapy.loader import ItemLoader
 import re
 import requests
@@ -22,11 +24,12 @@ import time
 
 
 
-class CrawlSpider(CrawlSpider):
+# class CrawlSpider(CrawlSpider):
+class CrawlSpider(RedisCrawlSpider):
     name = 'eastmoney'
     allowed_domains = ['eastmoney.com']
     # start_urls = ['http://www.eastmoney.com/','http://guba.eastmoney.com/default,{},f_1.html.html'.format(str(i) for i in range(2,527207))]
-    start_urls = ['http://guba.eastmoney.com/default_{}.html'.format(str(i)) for i in range(21000,527207)]
+    start_urls = ['http://guba.eastmoney.com/default_{}.html'.format(str(i)) for i in range(1,527207)]
 
 
     rules = (

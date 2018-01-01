@@ -93,3 +93,5 @@ AUTOTHROTTLE_ENABLED = True
 
 # Finance_DFCFW_tieba_path='E:/data_ll'#/media/liang/新加卷3
 Finance_DFCFW_tieba_path='/media/liang/新加卷3/DFCFW_html_page'
+
+REACTOR_THREADPOOL_MAXSIZE=50
