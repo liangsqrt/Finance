@@ -29,7 +29,7 @@ class CrawlSpider(RedisCrawlSpider):
     name = 'eastmoney'
     allowed_domains = ['eastmoney.com']
     # start_urls = ['http://www.eastmoney.com/','http://guba.eastmoney.com/default,{},f_1.html.html'.format(str(i) for i in range(2,527207))]
-    start_urls = ['http://guba.eastmoney.com/default_{}.html'.format(str(i)) for i in range(1,527207)]
+    start_urls = ['http://guba.eastmoney.com/default_{}.html'.format(str(i)) for i in range(1000,527207)]
 
 
     rules = (
@@ -57,8 +57,8 @@ class CrawlSpider(RedisCrawlSpider):
 
     def parse_item(self, response):
         i = {}
-        print '抓取到了一个list页面'
-        print response.status
+        print ('抓取到了一个list页面')
+        print (response.status)
         #i['domain_id'] = response.xpath('//input[@id="sid"]/@value').extract()
         #i['name'] = response.xpath('//div[@id="name"]').extract()
         #i['description'] = response.xpath('//div[@id="description"]').extract()
@@ -96,7 +96,7 @@ class CrawlSpider(RedisCrawlSpider):
         try:
             topicid=response.xpath('//head').re(r'var topicid="(\d*)"')[0]
         except Exception as e:
-            print e
+            print (e)
             return
         stockcode=response.xpath('//head').re(r'var code \= \"(\d*)\"\;')[0]
         other_info=response.xpath('//head/script').extract()[0]
@@ -134,7 +134,7 @@ class CrawlSpider(RedisCrawlSpider):
                 reply_id= one_reply.re(r'id="(zwli\d*)"')[0]#id
 
                 try:
-                    reply_content= one_reply.xpath('.//div[@class="zwlitext stockcodec"]/text()').extract()[0]#content[num]
+                        reply_content= one_reply.xpath('.//div[@class="zwlitext stockcodec"]/text()').extract()[0]#content[num]
                 except:
                     reply_content=''#因为这里边的回复可能是空的，别人直接回复的就是一个表情图片。
                 reply_publish_time= one_reply.xpath('.//div[@class="zwlitx"]/div[@class="zwlitxt"]/div[@class="zwlitime"]/text()').extract()[0]#publish_time
@@ -165,7 +165,7 @@ class CrawlSpider(RedisCrawlSpider):
 
 
             except Exception as e:
-                print e
+                print (e)
         #再次统计点赞数也可以将来根据数据库中的缓存舒俱来更新，也可以在这里就更新
 
 
@@ -181,7 +181,7 @@ class CrawlSpider(RedisCrawlSpider):
                 for num,count_info in enumerate(dianzhan_data_json['result']):
                     reply_data_this_page[num]['like_count']=count_info['count']
             except Exception as e:
-                print e
+                print (e)
 
 
         next_page_div= response.xpath('//body').re(r'<div class="pager talc zwpager">[\S|\s]*?<\/div>')
@@ -337,7 +337,7 @@ class CrawlSpider(RedisCrawlSpider):
                 reply_huifuid_this_page.append(reply_data_huifuid)
                 reply_huifuuid_this_page.append(reply_data_huifuuid)
             except Exception as e:
-                print e
+                print (e)
         # 再次统计点赞数也可以将来根据数据库中的缓存舒俱来更新，也可以在这里就更新
 
         url_dianzan = 'http://iguba.eastmoney.com/interf/guba.aspx?&action=getreplylikegd&id=' + response.meta['topicid'] + '&replyids='
@@ -351,7 +351,7 @@ class CrawlSpider(RedisCrawlSpider):
                 for num, count_info in enumerate(dianzhan_data_json['result']):
                     reply_data_this_page[num]['like_count'] = count_info['count']
             except Exception as e:
-                print e
+                print (e)
 
         next_page_div = response.xpath('//body').re(r'<div class="pager talc zwpager">[\S|\s]*?<\/div>')
 
@@ -387,7 +387,7 @@ class CrawlSpider(RedisCrawlSpider):
 
                     }
                 except Exception as e:
-                    print e
+                    print (e)
 
                 yield scrapy.Request(url=nex_page_url, callback=self.deal_page_contain_content_fallow, method='get',
                                      headers=self.headers, meta=the_data_send_to_meta)

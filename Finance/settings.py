@@ -22,7 +22,7 @@ NEWSPIDER_MODULE = 'Finance.spiders'
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 128
+CONCURRENT_REQUESTS = 512
 
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
@@ -92,6 +92,13 @@ AUTOTHROTTLE_ENABLED = True
 
 
 # Finance_DFCFW_tieba_path='E:/data_ll'#/media/liang/新加卷3
-Finance_DFCFW_tieba_path='/media/liang/新加卷3/DFCFW_html_page'
+Finance_DFCFW_tieba_path='/media/passager/新加卷/2/DFCFW_HTML'
+REDIS_HOST='127.0.0.1'
+REDIS_PORT='6379'
 
-REACTOR_THREADPOOL_MAXSIZE=50
+SCHEDULER="scrapy_redis.scheduler.Scheduler"
+DUPEFILTER_CLASS="scrapy_redis.dupefilter.RFPDupeFilter"
+
+
+REACTOR_THREADPOOL_MAXSIZE=100
+CONCURRENT_ITEMS=500
