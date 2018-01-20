@@ -32,9 +32,9 @@ class DFCFWPipeline(object):
         if isinstance(item,forumdata):
             try:
                 self.DB.insert(dict(item))
-                print '成功插入到数据一个'
+                print ('成功插入到数据一个')
             except Exception as e:
-                print e
+                print (e)
 
         if isinstance(item,forumhtmlpage):
             forumhtmlpage_dict=dict(item)
@@ -53,9 +53,9 @@ class DFCFWPipeline(object):
         if isinstance(item,DFCFWpublisher):
             try:
                 self.DB_publish_user.insert(dict(item))
-                print 'publish_user抓取到一个'
+                print ('publish_user抓取到一个')
             except Exception as e:
-                print e
+                print (e)
 
     def add_index(self):
         self.DB.ensure_index('url',unique=True)
