@@ -22,7 +22,7 @@ import time
 
 
 
-class CrawlSpider(CrawlSpider):
+class eastmoney(CrawlSpider):
     name = 'eastmoney'
     allowed_domains = ['eastmoney.com']
     # start_urls = ['http://www.eastmoney.com/','http://guba.eastmoney.com/default,{},f_1.html.html'.format(str(i) for i in range(2,527207))]
@@ -59,7 +59,7 @@ class CrawlSpider(CrawlSpider):
         #i['domain_id'] = response.xpath('//input[@id="sid"]/@value').extract()
         #i['name'] = response.xpath('//div[@id="name"]').extract()
         #i['description'] = response.xpath('//div[@id="description"]').extract()
-        return i
+        # return i
 
 
 
