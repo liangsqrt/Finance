@@ -53,3 +53,9 @@ class DFCFWpersionInfo(scrapy.Item):
     attention_field=scrapy.Field()
     attention_field_url=scrapy.Field()
     persion_abstract=scrapy.Field()
+
+class forumIndexPage(scrapy.Item):
+    mainurl = scrapy.Field()
+    datetime = scrapy.Field()
+    timestrimp = scrapy.Field()
+    content = scrapy.Field()

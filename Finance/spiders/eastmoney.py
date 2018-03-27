@@ -85,7 +85,7 @@ class eastmoney(CrawlSpider):
         reply_huifuuid_this_page=[]#根据这两个列表来获得点赞数
         reply_huifuid_this_page=[]
 
-        content_list_raw= response.xpath('//div[@class="zwcontentmain"]//text()').extract()
+        content_list_raw= response.xpath('//div[@class="zwcontentmain"]//text()').extract()#发帖人的主要回复内容。
         content_result=''
         for content_inside in content_list_raw:
             # print content_inside.strip()

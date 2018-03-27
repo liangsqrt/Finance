@@ -8,6 +8,7 @@
 from Finance.items import forumdata
 from Finance.items import forumhtmlpage
 from Finance.items import DFCFWpublisher
+from Finance.items import forumIndexPage
 from settings import Finance_DFCFW_tieba_path
 from Finance.other_moudle import create_filename
 import pymongo
@@ -27,6 +28,7 @@ class DFCFWPipeline(object):
         self.DB=self.COL['DFCFW10_4']
         self.DB_DFCFW_relation=self.COL['DFCFW_md5_url']
         self.DB_publish_user=self.COL['DFCFW_publish_user']
+        self.DB_index_info=self.COL['DFCFW_index_info']
 
     def process_item(self,item,spider):
         if isinstance(item,forumdata):
@@ -56,6 +58,25 @@ class DFCFWPipeline(object):
                 print ('publish_user抓取到一个')
             except Exception as e:
                 print (e)
+
+        if isinstance(item,forumIndexPage):
+            Finance_DFCFW_tieba_path_index='L:/DFCFW_INDEX'
+
+            index_page_dict=dict(item)
+            date, urlmd5 = create_filename.DFCFW_forumdata_name(url=index_page_dict['mainurl'],
+                                                                datetime=index_page_dict['datetime'])
+
+            index_page_dict['urlmd5']=urlmd5
+            file_finally = Finance_DFCFW_tieba_path_index + '/' + date + '/' + urlmd5
+
+            create_filename.checkfile(file_finally)
+            with open(file_finally, 'w+') as fl:
+                fl.write(index_page_dict['content'])
+                del index_page_dict['content']
+                self.DB_index_info.insert(
+                    index_page_dict
+                )
+
 
     def add_index(self):
         self.DB.ensure_index('url',unique=True)
