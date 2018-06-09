@@ -48,7 +48,7 @@ class pagespider(CrawlSpider):
 
 
     def parse(self, response):
-        print '抓取到了一个评论list页面'
+        print ('抓取到了一个评论list页面')
         raise CloseSpider(response.url)
 
         urls_list=response.selector.re(r'(news\,\d{6}\,\d{8,10}\.html)')
@@ -68,7 +68,7 @@ class pagespider(CrawlSpider):
             return str(time_str)
 
 
-        print 'in savepageinfo'
+        print ('in savepageinfo')
         loader1=ItemLoader(item=forumhtmlpage(),response=response)
         loader1.default_output_processor=TakeFirst()
         loader1.add_value('mainurl',response.url)
