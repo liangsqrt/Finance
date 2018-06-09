@@ -39,10 +39,12 @@ CONCURRENT_REQUESTS = 512
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-#DEFAULT_REQUEST_HEADERS = {
-#   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#   'Accept-Language': 'en',
-#}
+DEFAULT_REQUEST_HEADERS = {
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  # 'Accept-Language': 'en',
+   'accept-language': 'zh-CN,zh;q=0.8',
+   'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36'
+}
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
@@ -66,7 +68,8 @@ CONCURRENT_REQUESTS = 512
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'Finance.pipelines.DFCFWPipeline': 300,
+   'Finance.pipelines.DFCFWPipeline': 301,
+   # 'Finance.pipelines.save_data_to_file':301,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -95,6 +98,8 @@ AUTOTHROTTLE_ENABLED = True
 Finance_DFCFW_tieba_path='/media/passager/新加卷/2/DFCFW_HTML'
 REDIS_HOST='127.0.0.1'
 REDIS_PORT='6379'
+REDIS_PARAMS={'db':1}
+
 
 SCHEDULER="scrapy_redis.scheduler.Scheduler"
 DUPEFILTER_CLASS="scrapy_redis.dupefilter.RFPDupeFilter"

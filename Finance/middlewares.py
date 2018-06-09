@@ -85,7 +85,7 @@ class HttpProxyMiddleware(object):
                 else:
                     pass
             except Exception as e:
-                print e
+                print (e)
             finally:
                 break
     # def process_response(self,request,response,spider):
@@ -110,7 +110,7 @@ class FinanceProxySaveMiddleware(object):
             else:
                 return None
         except Exception as e:
-            print e
+            print (e)
 
 
     def process_spider_exception(self,response, exception, spider):

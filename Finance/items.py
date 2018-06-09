@@ -19,7 +19,6 @@ class forumdata(scrapy.Item):
     content=scrapy.Field()
     publish_user=scrapy.Field()
     publish_time=scrapy.Field()
-    data_proper=scrapy.Field()
     publish_user_href=scrapy.Field()
     reply_nodes=scrapy.Field()
     topicid=scrapy.Field()
@@ -31,11 +30,14 @@ class forumdata(scrapy.Item):
 
 
 class forumhtmlpage(scrapy.Item):
+    board=scrapy.Field()
     mainurl=scrapy.Field()
-    datetime=scrapy.Field()
+    datetime=scrapy.Field()#unknown
     timestrimp=scrapy.Field()
     content=scrapy.Field()
     publish_time=scrapy.Field()
+    spider_time=scrapy.Field()
+    id=scrapy.Field()
 
 class DFCFWpublisher(scrapy.Item):
     publish_user_href=scrapy.Field()
