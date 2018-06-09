@@ -5,7 +5,11 @@ import platform
 
 
 ENCNname_dict={
-    'DFCFW_news':'东方财富网新闻'
+    'DFCFW_news':'东方财富网新闻',
+    'DFCFW_finance':'东方财富网财经',
+    'DFCFW_stock': '东方财富网股票',
+    'DFCFW_guba': '东方财富网股吧',
+
 }
 
 def getNameCN(ENname):

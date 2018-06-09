@@ -48,7 +48,7 @@ class DFCFWPipeline(object):
     def process_item(self,item,spider):
         if isinstance(item,forumhtmlpage):
             item_dict = dict(item)
-            plant_form = spider.name
+            plant_form = item['board']
             publish_time = item['publish_time'][0]
             urlOruid = item['mainurl'][0]
             newsidOrtid = item['id'][0]

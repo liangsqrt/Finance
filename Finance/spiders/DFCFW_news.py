@@ -37,7 +37,7 @@ class DFCFW_news(RedisCrawlSpider):
 
 
         loader1=ItemLoader(response=response,item=forumhtmlpage())
-        loader1.add_value('board','finance')
+        loader1.add_value('board','DFCFW_finance')
         loader1.add_value('mainurl',response.url)
         loader1.add_value('timestrimp',int(time.time()*1000))
         loader1.add_value('content',response.text)
@@ -60,7 +60,7 @@ class DFCFW_news(RedisCrawlSpider):
 
 
         loader1=ItemLoader(response=response,item=forumhtmlpage())
-        loader1.add_value('board','finance')
+        loader1.add_value('board','DFCFW_stock')
         loader1.add_value('mainurl',response.url)
         loader1.add_value('timestrimp',int(time.time()*1000))
         loader1.add_value('content',response.text)
@@ -83,7 +83,7 @@ class DFCFW_news(RedisCrawlSpider):
 
 
         loader1=ItemLoader(response=response,item=forumhtmlpage())
-        loader1.add_value('board','finance')
+        loader1.add_value('board','DFCFW_guba')
         loader1.add_value('mainurl',response.url)
         loader1.add_value('timestrimp',int(time.time()*1000))
         loader1.add_value('content',response.text)
