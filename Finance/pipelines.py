@@ -16,7 +16,7 @@ import hashlib
 import time
 from Finance.other_moudle.pipeline_nameEN_to_nameCN import getNameCN
 import os
-
+import pickle
 
 
 
@@ -90,7 +90,7 @@ class DFCFWPipeline(object):
             publish_time_split_2=[str(x) for x in publish_time_split_2]
         except Exception as e:
             publish_time_split_2=['time_wrong','time_wrong']
-        filename=publish_time_stramp_str_13+'_'+CNname+'_speeches_'+str(publish_time_split_2[0])+'_'+plant_form+'_'+publish_time_stramp_str_13+'_'+urlhashlib_str
+        filename=publish_time_stramp_str_13+'_'+CNname.replace('/','_')+'_speeches_'+str(publish_time_split_2[0])+'_'+plant_form.replace('/','_')+'_'+publish_time_stramp_str_13+'_'+urlhashlib_str
 
         file_path=BASIC_FILE+'/speeches'+'/'+CNname+'/'+publish_time_split_2[0]
         filename=file_path+'/'+filename#看到没有，这里就把前边的路径名加在filename之前了，所以filename不单单是一个文件名。
@@ -131,12 +131,17 @@ class DFCFWPipeline(object):
         :return: 这里已经是爬虫的末端了，
         '''
         if os.path.exists(file_path):
-            with open(file, 'w+') as cmfl:
-                json.dump(full_data, cmfl)
+            with open(file, 'wb+') as cmfl:
+                # json.dump(full_data, cmfl)
+                # cmfl.write(full_data['content'][0])
+                pickle.dump(full_data,cmfl)
         else:
             os.makedirs(file_path)
-            with open(file, 'w+') as cmfl:
-                json.dump(full_data, cmfl)
+            with open(file, 'wb+') as cmfl:
+                # json.dump(full_data, cmfl)
+                # cmfl.write(full_data['content'][0])
+                pickle.dump(full_data,cmfl)
+
 
 
     def add_index(self):

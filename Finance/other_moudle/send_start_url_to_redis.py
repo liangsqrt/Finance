@@ -11,6 +11,8 @@ all_website_key= redis1.keys('*')
 
 web_begin_url_config={
     'DFCFW_news':'http://www.eastmoney.com/',
+    'DFCFW_all_page': 'http://www.eastmoney.com/',
+
 }
 
 
@@ -132,4 +134,4 @@ if __name__ == '__main__':
 
     # deal_web_dupefilter('tchrd')
 
-    send_start_url_to_redis('DFCFW_news')
+    send_start_url_to_redis('DFCFW_all_page')

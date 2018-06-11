@@ -17,7 +17,7 @@ def getNameCN(ENname):
     if ENname in ENCNname_dict.keys():
         cnName= ENCNname_dict[ENname]
     else:
-        cnName= '未知网站'
+        cnName= ENname
     if platform.system() != 'Linux':
         # cnName=cnName.decode('utf-8').encode('gbk')
         cnName=cnName#全程使用utf-8以免出错

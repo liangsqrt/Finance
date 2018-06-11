@@ -76,7 +76,7 @@ class proxy_server:
                         response=self.s.recv(1024)
                         if response=='full':
                             self.s.close()
-                            print '服务器的代理满了，正在等待'
+                            print ('服务器的代理满了，正在等待')
                             time.sleep(5)
                             continue
                         elif response=='sucessed':
@@ -85,7 +85,7 @@ class proxy_server:
                 else:
                     self.s.close()
             except Exception as e:
-                print e
+                print (e)
                 pass
         self.s.close()
 
@@ -101,9 +101,9 @@ class proxy_server:
                 response=self.s.recv(1024)
                 break
             except Exception as e:
-                print e
+                print (e)
             finally:
-                print 'get代理的时候，链接已关闭'
+                print ('get代理的时候，链接已关闭')
                 self.s.close()
             # index=random.randint(0,len(self.proxy_list))
             # proxy=self.proxy_list[index]
@@ -113,17 +113,17 @@ class proxy_server:
             # else:
             #     self.proxy_list.remove(proxy)
         # return proxy['proxy']
-        print response
+        # print response
 
 
     def startlistening(self):
         while True:
-            print '正在监听'
+            print ('正在监听')
             need_recv=True
             conn, addr = self.s.accept()
             while need_recv:
                 data= conn.recv(1024)
-                print addr,'\n'
+                print (addr,'\n')
                 if data=='get_proxy':
                     proxy=self.get_proxy()
                     conn.send(str(proxy))
