@@ -87,7 +87,7 @@ class DFCFW_news(RedisCrawlSpider):
         loader1.add_value('mainurl',response.url)
         loader1.add_value('timestrimp',int(time.time()*1000))
         loader1.add_value('content',response.text)
-        loader1.add_value('publish_time','2018-06-10 00:00:00')
+        loader1.add_value('publish_time',time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
         loader1.add_value('spider_time',time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
         loader1.add_value('id',hashlib.md5(response.url.encode('utf-8')).digest())
         item1=loader1.load_item()

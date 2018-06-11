@@ -23,10 +23,10 @@ import os
 
 
 BASIC_FILE="E:/data_DFCFW_news"
-BASIC_FILE2='E:/data2_DFCFW_news_'
+BASIC_FILE2='E:/data2_DFCFW_news_2'
 if platform.system()=='Linux':#BigDATA's workstation
-    BASIC_FILE='/home/spider/data_DFCFW_news'
-    BASIC_FILE2='/home/spider/data2_DFCFW_news_'
+    BASIC_FILE='/media/liang/store1/data_DFCFW_news'
+    BASIC_FILE2='/media/liang/store1/data_DFCFW_news2'
 
 
 
@@ -48,7 +48,7 @@ class DFCFWPipeline(object):
     def process_item(self,item,spider):
         if isinstance(item,forumhtmlpage):
             item_dict = dict(item)
-            plant_form = item['board']
+            plant_form = item['board'][0]
             publish_time = item['publish_time'][0]
             urlOruid = item['mainurl'][0]
             newsidOrtid = item['id'][0]
@@ -158,10 +158,10 @@ class save_data_to_file(object):
         :return: 这里没有返回对象，直接存储到了本地文件中。   如有需要，具体如何返回数据，参见官方文档。
         '''
         item_dict=dict(item)
-        plant_form=spider.name
-        publish_time=item['publish_time']
-        urlOruid=item['url']
-        newsidOrtid=item['id']
+        plant_form=spider.name[0]
+        publish_time=item['publish_time'][0]
+        urlOruid=item['url'][0]
+        newsidOrtid=item['id'][0]
         datatype='news'
 
         filename,file_path=self.create_file_str(publish_time=publish_time,plant_form=plant_form,urlOruid=urlOruid,newsidOrtid=newsidOrtid,datatype=datatype)

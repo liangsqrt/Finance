@@ -149,8 +149,8 @@ def lanch_spider_runing_just_10Min():
 
 
 if __name__ == '__main__':
-    get_all_spiders()
-    # start_a_spider_job(spidername='chinainperspective')
+    # get_all_spiders()
+    start_a_spider_job(spidername='DFCFW_news')
     # cancel_job(jobId='27cf4bf04de011e880a40862667c7ee1')
     # get_all_Jobs()
     # cancel_all_spider_job()
