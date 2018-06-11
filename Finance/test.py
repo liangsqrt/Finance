@@ -14,7 +14,7 @@ while True:
     client = pymongo.MongoClient('localhost', 27017)
     col = client['Finance']
     db = col['DFCFW10_4']
-    print db.find().count()
+    print (db.find().count())
 
 
 

@@ -149,10 +149,10 @@ def lanch_spider_runing_just_10Min():
 
 
 if __name__ == '__main__':
-    # get_all_spiders()
+    get_all_spiders()
     # start_a_spider_job(spidername='chinainperspective')
     # cancel_job(jobId='27cf4bf04de011e880a40862667c7ee1')
     # get_all_Jobs()
     # cancel_all_spider_job()
     # start_all_spider()
-    lanch_spider_runing_just_10Min()
+    # lanch_spider_runing_just_10Min()
