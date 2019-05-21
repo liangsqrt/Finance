@@ -3,7 +3,7 @@ from scrapy_redis.spiders import  RedisCrawlSpider
 from scrapy.spiders import Rule
 from scrapy.linkextractor import  LinkExtractor
 from scrapy.loader import ItemLoader
-from Finance.items import forumhtmlpage
+from Finance.items import RawHtml
 import time
 import pickle
 import hashlib
@@ -42,7 +42,7 @@ class DFCFW_news(RedisCrawlSpider):
 
 
 
-        loader1=ItemLoader(response=response,item=forumhtmlpage())
+        loader1=ItemLoader(response=response, item=RawHtml())
         loader1.add_value('board',response.url,deal_board_info)
         loader1.add_value('mainurl',response.url)
         loader1.add_value('timestrimp',int(time.time()*1000))

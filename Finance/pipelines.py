@@ -6,7 +6,7 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 from Finance.items import forumdata
-from Finance.items import forumhtmlpage
+from Finance.items import RawHtml
 from Finance.items import DFCFWpublisher
 from Finance.other_moudle import create_filename
 import pymongo
@@ -46,7 +46,7 @@ class DFCFWPipeline(object):
         self.DB_publish_user=self.COL['DFCFW_publish_user']
 
     def process_item(self,item,spider):
-        if isinstance(item,forumhtmlpage):
+        if isinstance(item, RawHtml):
             item_dict = dict(item)
             plant_form = item['board'][0]
             publish_time = item['publish_time'][0]
@@ -142,10 +142,9 @@ class DFCFWPipeline(object):
                 # cmfl.write(full_data['content'][0])
                 pickle.dump(full_data,cmfl)
 
-
-
     def add_index(self):
         self.DB.ensure_index('url',unique=True)
+
     def close_spider(self,spider):
         self.client.close()
 
