@@ -6,13 +6,12 @@
 # http://doc.scrapy.org/en/latest/topics/items.html
 
 import scrapy
-import mongoengine
 from mongoengine.document import Document
 from mongoengine.fields import *
 from mongoengine import connect
+from scrapy.loader.processors import TakeFirst
 
-
-connect('21世纪教育网3', host="localhost", port=27017)
+connect('东方财富网', host="192.168.31.107", port=27017)
 
 
 class FinanceItem(scrapy.Item):
@@ -23,7 +22,7 @@ class FinanceItem(scrapy.Item):
 
 class MongoItem(scrapy.Item):
     def __create_sqlalchemy_item__(self):
-        if not "mongo_type" in self.__class__.__dict__.keys():
+        if "mongo_type" not in self.__class__.__dict__.keys():
             raise Exception("没有指明一种数据类型,或这种数据类型本来就不存在！")
         type_instance = eval(self.mongo_type)()
         try:
@@ -40,60 +39,61 @@ class MongoItem(scrapy.Item):
 
 class Forum(MongoItem):
     mongo_type = "ForumMongo"
-    content = scrapy.Field()
-    publish_user = scrapy.Field()
-    publish_time = scrapy.Field()
-    publish_user_href = scrapy.Field()
-    user_device = scrapy.Field()
-    topic_id = scrapy.Field()
-    url = scrapy.Field()
-    read_count = scrapy.Field()
-    reply_count = scrapy.Field()
-    stock_code = scrapy.Field()
-    other_info = scrapy.Field()
-    forum_age = scrapy.Field()
-    influence = scrapy.Field()
+    content = scrapy.Field(output_processor=TakeFirst())
+    publish_user = scrapy.Field(output_processor=TakeFirst())
+    publish_time = scrapy.Field(output_processor=TakeFirst())
+    publish_user_href = scrapy.Field(output_processor=TakeFirst())
+    user_device = scrapy.Field(output_processor=TakeFirst())
+    topic_id = scrapy.Field(output_processor=TakeFirst())
+    url = scrapy.Field(output_processor=TakeFirst())
+    read_count = scrapy.Field(output_processor=TakeFirst())
+    reply_count = scrapy.Field(output_processor=TakeFirst())
+    stock_code = scrapy.Field(output_processor=TakeFirst())
+    other_info = scrapy.Field(output_processor=TakeFirst())
+    forum_age = scrapy.Field(output_processor=TakeFirst())
+    influence = scrapy.Field(output_processor=TakeFirst())
 
 
 class RawHtml(MongoItem):
     mongo_type = "RawHtmlMongo"
-    board = scrapy.Field()
-    url = scrapy.Field()
-    datetime = scrapy.Field()#unknown
-    content = scrapy.Field()
-    publish_time = scrapy.Field()
-    spider_time = scrapy.Field()
-    id = scrapy.Field()
+    board = scrapy.Field(output_processor=TakeFirst())
+    url = scrapy.Field(output_processor=TakeFirst())
+    datetime = scrapy.Field(output_processor=TakeFirst())  # unknown
+    content = scrapy.Field(output_processor=TakeFirst())
+    publish_time = scrapy.Field(output_processor=TakeFirst())
+    spider_time = scrapy.Field(output_processor=TakeFirst())
+    id = scrapy.Field(output_processor=TakeFirst())
 
 
 class PublisherInfo(MongoItem):
     mongo_type = "PublisherInfoMongo"
-    publish_user_id = scrapy.Field()
-    publish_user_name = scrapy.Field()
-    publish_user_href = scrapy.Field()
-    zixuan_num = scrapy.Field()
-    guanzhu_num = scrapy.Field()
-    fans = scrapy.Field()  # 他的粉丝
-    influence = scrapy.Field()  # 影响力
-    forum_age = scrapy.Field()  # 吧龄
-    register_time = scrapy.Field()  # 注册时间
-    attention_field = scrapy.Field()  # 能力圈
-    attention_field_url = scrapy.Field()
-    abstract = scrapy.Field()
-    visit_count = scrapy.Field()
+    publish_user_id = scrapy.Field(output_processor=TakeFirst())
+    publish_user_name = scrapy.Field(output_processor=TakeFirst())
+    publish_user_href = scrapy.Field(output_processor=TakeFirst())
+    zixuan_num = scrapy.Field(output_processor=TakeFirst())
+    guanzhu_num = scrapy.Field(output_processor=TakeFirst())
+    fans = scrapy.Field(output_processor=TakeFirst())  # 他的粉丝
+    influence = scrapy.Field(output_processor=TakeFirst())  # 影响力
+    forum_age = scrapy.Field(output_processor=TakeFirst())  # 吧龄
+    register_time = scrapy.Field(output_processor=TakeFirst())  # 注册时间
+    attention_field = scrapy.Field(output_processor=TakeFirst())  # 能力圈
+    attention_field_url = scrapy.Field(output_processor=TakeFirst())
+    abstract = scrapy.Field(output_processor=TakeFirst())
+    visit_count = scrapy.Field(output_processor=TakeFirst())
 
 
 class Replay(MongoItem):
     mongo_type = "ReplayMongo"
-    replay_id = scrapy.Field()
-    content = scrapy.Field()
-    publish_user = scrapy.Field()
-    publish_user_id = scrapy.Field()
-    publish_time = scrapy.Field()
-    publish_user_href = scrapy.Field()
-    topic_id = scrapy.Field()
-    influence = scrapy.Field()
-    forum_age = scrapy.Field()
+    replay_id = scrapy.Field(output_processor=TakeFirst())  # 本条回复的id
+    content = scrapy.Field(output_processor=TakeFirst())
+    publish_user = scrapy.Field(output_processor=TakeFirst())
+    publish_user_id = scrapy.Field(output_processor=TakeFirst())
+    publish_time = scrapy.Field(output_processor=TakeFirst())
+    publish_user_href = scrapy.Field(output_processor=TakeFirst())
+    topic_id = scrapy.Field(output_processor=TakeFirst())  # 整个帖子的id
+    influence = scrapy.Field(output_processor=TakeFirst())
+    forum_age = scrapy.Field(output_processor=TakeFirst())
+    replay_to = scrapy.Field(output_processor=TakeFirst())
 
 
 class RawHtmlMongo(Document):
@@ -106,10 +106,10 @@ class RawHtmlMongo(Document):
     id = StringField()
 
     meta = {
-        "indexes":[
-            "mainurl"
+        "indexes": [
+            "url"
         ],
-        "unique":True
+        "unique": True
     }
 
 
@@ -126,9 +126,13 @@ class ForumMongo(Document):
     stock_code = StringField()
     other_info = StringField()
     influence = FloatField()
-    forum_age = FloatField()
+    forum_age = StringField()
     meta = {
-        "indexes": []
+        "indexes": [
+            "url",
+            "topic_id"
+        ],
+        "unique": True
     }
 
 
@@ -140,8 +144,17 @@ class ReplayMongo(Document):
     publish_time = DateTimeField()
     publish_user_href = StringField()
     topic_id = StringField()  # 观点id
-    influence = IntField()
-    forum_age = FloatField()
+    influence = FloatField()
+    forum_age = StringField()
+    replay_to = StringField()
+    meta = {
+        "indexes": [
+            "topic_id",
+            "replay_id",
+            "publish_user"
+        ],
+        "unique": True
+    }
 
 
 class PublisherInfoMongo(Document):
@@ -158,6 +171,13 @@ class PublisherInfoMongo(Document):
     attention_field_url = URLField()
     abstract = StringField()
     visit_count = IntField()
+    meta = {
+        "indexes": [
+            "publish_user_id",
+            "publish_user_href"
+        ],
+        "unique": True
+    }
 
 
 if __name__ == '__main__':

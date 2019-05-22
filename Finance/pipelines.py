@@ -5,9 +5,8 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-from Finance.items import forumdata
+
 from Finance.items import RawHtml
-from Finance.items import DFCFWpublisher
 from Finance.other_moudle import create_filename
 import pymongo
 import json
@@ -17,7 +16,7 @@ import time
 from Finance.other_moudle.pipeline_nameEN_to_nameCN import getNameCN
 import os
 import pickle
-
+from Finance.items import *
 
 
 
@@ -258,6 +257,47 @@ class save_data_to_file(object):
             os.makedirs(file_path)
             with open(file, 'w+') as cmfl:
                 json.dump(full_data, cmfl)
+
+
+class save_mongo(object):
+    def process_item(self, item, spider):
+        try:
+            mongoitem = item.__create_sqlalchemy_item__()
+            mongoitem.save()
+        except Exception as e:
+            print(e)
+
+class save_raw_to_mongo(object):
+    def process_item(self, item, spider):
+        if "Raw" in item.mongo_type:
+            try:
+                item.__create_sqlalchemy_item__()
+            except Exception as e:
+                print(e)
+        else:
+            return item
+
+
+class save_forum_to_mongo(object):
+    def process_item(self, item, spider):
+        if "Forum" in item.mongo_type:
+            try:
+                item.__create_sqlalchemy_item__()
+            except Exception as e:
+                print(e)
+        else:
+            return item
+
+class save_repaly_to_mongo(object):
+    def process_item(self, item, spider):
+        if "Replay" in item.mongo_type:
+            try:
+                item.__create_sqlalchemy_item__()
+            except Exception as e:
+                print(e)
+        else:
+            return item
+
 
 
 if __name__ == '__main__':
