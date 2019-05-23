@@ -105,5 +105,9 @@ SCHEDULER="scrapy_redis.scheduler.Scheduler"
 DUPEFILTER_CLASS="scrapy_redis.dupefilter.RFPDupeFilter"
 
 
-REACTOR_THREADPOOL_MAXSIZE=100
-CONCURRENT_ITEMS=500
+REACTOR_THREADPOOL_MAXSIZE = 100
+CONCURRENT_ITEMS = 500
+
+REDIS_PARAMS ={
+    'password': 'asd123456',
+}
