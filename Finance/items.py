@@ -70,8 +70,8 @@ class PublisherInfo(MongoItem):
     publish_user_id = scrapy.Field(output_processor=TakeFirst())
     publish_user_name = scrapy.Field(output_processor=TakeFirst())
     publish_user_href = scrapy.Field(output_processor=TakeFirst())
-    zixuan_num = scrapy.Field(output_processor=TakeFirst())
-    guanzhu_num = scrapy.Field(output_processor=TakeFirst())
+    # zixuan_num = scrapy.Field(output_processor=TakeFirst())
+    # guanzhu_num = scrapy.Field(output_processor=TakeFirst())
     fans = scrapy.Field(output_processor=TakeFirst())  # 他的粉丝
     influence = scrapy.Field(output_processor=TakeFirst())  # 影响力
     forum_age = scrapy.Field(output_processor=TakeFirst())  # 吧龄
@@ -80,6 +80,12 @@ class PublisherInfo(MongoItem):
     attention_field_url = scrapy.Field(output_processor=TakeFirst())
     abstract = scrapy.Field(output_processor=TakeFirst())
     visit_count = scrapy.Field(output_processor=TakeFirst())
+    his_stock_count = scrapy.Field(output_process=TakeFirst())
+    stock_focused_on = scrapy.Field(output_processor=TakeFirst())
+    person_he_care_count = scrapy.Field(output_processor=TakeFirst())
+    fans_count = scrapy.Field(output_processor=TakeFirst())
+    person_he_care = scrapy.Field(output_processor=TakeFirst())
+    his_stock = scrapy.Field(output_processor=TakeFirst())
 
 
 class Replay(MongoItem):
@@ -161,16 +167,22 @@ class PublisherInfoMongo(Document):
     publish_user_id = StringField()
     publish_user_name = StringField()
     publish_user_href = URLField()
-    zixuan_num = IntField()
-    guanzhu_num = IntField()
-    fans_count = IntField()  # 他的粉丝
+    # zixuan_num = IntField()
+    # guanzhu_num = IntField()
+    fans = ListField()  # 他的粉丝
     influence = FloatField()  # 影响力
     forum_age = FloatField()  # 吧龄
-    register_time = DateTimeField()  # 注册时间
+    register_time = DateTimeField()  # 注册时间s
     attention_field = StringField()  # 能力圈
     attention_field_url = URLField()
     abstract = StringField()
     visit_count = IntField()
+    stock_focused_on = ListField()
+    his_stock_count = IntField()
+    person_he_care_count = IntField()
+    fans_count = IntField()
+    person_he_care = ListField()
+    his_stock = ListField()
     meta = {
         "indexes": [
             "publish_user_id",

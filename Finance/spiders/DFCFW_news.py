@@ -4,7 +4,7 @@ from scrapy.spiders import CrawlSpider
 from scrapy.spiders import Rule
 from scrapy.linkextractors import LinkExtractor
 from scrapy.loader import ItemLoader
-from Finance.items import RawHtml, Forum, Replay
+from Finance.items import RawHtml, Forum, Replay, PublisherInfo
 import time
 import datetime
 import hashlib
@@ -15,14 +15,16 @@ class DFCFW_news(CrawlSpider):
     name = 'DFCFW_news'
 
     rules = (
-        Rule(LinkExtractor(allow=r'http\:\/\/finance\.eastmoney\.com\/news\/\d+\,\d.+\.html'), callback='parse_content_finance', follow=False),
-        Rule(LinkExtractor(allow=r'http\:\/\/stock\.eastmoney\.com\/news\/\d+\,\d.+\.html'), callback='parse_content_stock', follow=False),
+        # Rule(LinkExtractor(allow=r'http\:\/\/finance\.eastmoney\.com\/\w.+\/\d*\.html'), callback='parse_content_finance', follow=False),
+        # Rule(LinkExtractor(allow=r'http\:\/\/stock\.eastmoney\.com\/news\/\d+\,\d.+\.html'), callback='parse_content_stock', follow=False),
         Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/news\,\w*?\,\d.+\.html'),
              callback='parse_forum', follow=True),
         Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/news\,\S+\,\d.+\.html'),
              callback='parse_forum', follow=True),
-
+        Rule(LinkExtractor(allow=r'http\:\/\/iguba\.eastmoney\.com\/\d*'),
+             callback="parse_person", follow=True),
         Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/.*'), follow=True),
+
 
     )
     start_urls = [
@@ -33,6 +35,11 @@ class DFCFW_news(CrawlSpider):
 
 
     def parse_content_finance(self,response):
+        """
+        没有存在的必要，每一个finance板块的文章，在guba里边，也会有一张gupa的帖子。
+        :param response:
+        :return:
+        """
 
         def deal_publish_time(publish_time):
             print(publish_time)
@@ -42,20 +49,46 @@ class DFCFW_news(CrawlSpider):
 
             return year_str+'-'+mounth_str+'-'+day_str+' 00:00:00'
 
+        loader1 = ItemLoader(response=response, item=RawHtml())
+        loader1.add_value('board', 'DFCFW_guba')
+        loader1.add_value('url', response.url)
+        loader1.add_value('datetime', datetime.datetime.now())
+        loader1.add_value('content', response.text)
+        loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 
-        loader1=ItemLoader(response=response, item=RawHtml())
-        loader1.add_value('board','DFCFW_finance')
-        loader1.add_value('mainurl',response.url)
-        loader1.add_value('timestrimp',int(time.time()*1000))
-        loader1.add_value('content',response.text)
-        loader1.add_value('publish_time',response.url.split(',')[-1].split('.')[0],deal_publish_time)
-        loader1.add_value('spider_time',time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
-        loader1.add_value('id',hashlib.md5(response.url.encode('utf-8')).digest())
-        item1=loader1.load_item()
-        return item1
+        item1 = loader1.load_item()
+        yield item1
+
+        loader2 = ItemLoader(response=response, item=Forum())
+        topic_id = response.url.split
+        loader2.add_value("url", response.url)
+        loader2.add_value("stock_code", response.url.split(",")[1])
+        loader2.add_value("topic_id", topic_id)
+        loader2.add_xpath("publish_user_href", '//div[@id="zwconttbn"]//strong/a/@href', lambda x: x[0] if x else None)
+        loader2.add_xpath("publish_user", '//div[@id="zwconttbn"]//strong/a/text()', lambda x: x[0] if x else None)
+        loader2.add_xpath("user_device", response.xpath(
+            '//div[@class="zwfbtime"]//text()').extract_first("").strip().split(" ")[-1])
+        loader2.add_value(
+            "publish_time",
+            response.xpath('//div[@id="zwcontt"]//div[@class="zwfbtime"]'
+                           ).re("\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}")[0], deal_publish_time)
+        loader2.add_xpath("content", '//div[@id="post_content"]//text()', lambda x: "".join(x))
+        loader2.add_xpath("forum_age", '//div[@id="zwconttbn"]//div[@class="influence_wrap"]/@data-user_age',
+                          lambda x: x[0] if x else None)
+        loader2.add_xpath("influence", '//div[@id="zwconttbn"]//div[@class="influence_wrap"]/@data-user_level',
+                          lambda x: float(x[0]) if x else None)
+        # loader2.add_value("read_count", read_count)
+        # loader2.add_value("reply_count", replay_count)
+        item2 = loader2.load_item()
+
 
 
     def parse_content_stock(self,response):
+        """
+        情况和finance类似，guba的数据都覆盖了他们。
+        :param response:
+        :return:
+        """
 
         def deal_publish_time(publish_time):
             print(publish_time)
@@ -268,6 +301,46 @@ class DFCFW_news(CrawlSpider):
             yield scrapy.Request(url=next_url, headers=response.headers, meta={"pre_data": {
                 "item": last_item
             }}, callback=self.parse_forum_next)
+
+
+    def parse_person(self, response):
+        jsdata = response.selector.xpath("itemdata = (\{.*\})\;")
+        datajson = json.loads(jsdata)
+
+        #  保存原始网页信息
+        loader1 = ItemLoader(response=response, item=RawHtml())
+        loader1.add_value('board', 'DFCFW_iguba')
+        loader1.add_value('url', response.url)
+        loader1.add_value('datetime', datetime.datetime.now())
+        loader1.add_value('content', response.text)
+        loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+
+        item1 = loader1.load_item()
+        yield item1
+
+        loader1 = ItemLoader(response, PublisherInfo())
+        loader1.add_value("publish_user_href", response.url)
+        loader1.add_xpath("publish_user_name", '//div[@class="taname"]/text()', lambda x:x.strip())
+        loader1.add_xpath("influence", "//div[@id='influence']//span/@data-influence", lambda x:int(x))
+        loader1.add_xpath("publish_user_id",
+                          "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/../../a/@href",
+                          lambda x: x.strip("/"))
+        loader1.add_xpath("his_stock_count",
+                          "//div[@class='gbbody']//div[@class='tanums']//td/a/em/text()",
+                          lambda x: int(x.strip()))
+        loader1.add_xpath("fans_count",
+                          "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/text()",
+                          lambda x: int(x.strip()))
+        loader1.add_xpath("person_he_care_count",
+                          "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/text()",
+                          lambda x: int(x.strip()))
+        loader1.add_value("visit_count",
+                          response.xpath('//div[@class="sumfw"]//span[contains(text(), "次")]/text()').extract_first(),
+                          lambda x: x.strip("次"))
+        loader1.add_value("register_time", response.xpath("//div[@id='influence']//span[@style]").re("\((.*)\)"))
+        loader1.add_value("forum_age", response.xpath("//div[@id='influence']//span/text()").extract()[0], )
+
+
 
 
 

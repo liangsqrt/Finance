@@ -1,7 +1,7 @@
 import scrapy
 from scrapy_redis.spiders import  RedisCrawlSpider
 from scrapy.spiders import Rule
-from scrapy.linkextractor import  LinkExtractor
+from scrapy.linkextractors import  LinkExtractor
 from scrapy.loader import ItemLoader
 from Finance.items import RawHtml
 import time
