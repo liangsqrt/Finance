@@ -338,7 +338,10 @@ class DFCFW_news(CrawlSpider):
                           response.xpath('//div[@class="sumfw"]//span[contains(text(), "次")]/text()').extract_first(),
                           lambda x: x.strip("次"))
         loader1.add_value("register_time", response.xpath("//div[@id='influence']//span[@style]").re("\((.*)\)"))
-        loader1.add_value("forum_age", response.xpath("//div[@id='influence']//span/text()").extract()[0], )
+        loader1.add_value("forum_age", response.xpath("//div[@id='influence']//span/text()").extract_first(0))
+        loader1.add_value()
+
+        # todo: fans,abstract, attention_field, attention_field_url,stock_focused_on,person_he_care_count,person_he_care,stock
 
 
 
