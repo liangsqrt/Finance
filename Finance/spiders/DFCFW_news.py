@@ -339,9 +339,12 @@ class DFCFW_news(CrawlSpider):
                           lambda x: x.strip("次"))
         loader1.add_value("register_time", response.xpath("//div[@id='influence']//span[@style]").re("\((.*)\)"))
         loader1.add_value("forum_age", response.xpath("//div[@id='influence']//span/text()").extract_first(0))
-        loader1.add_value()
+        loader1.add_xpath("attention_field", '//div[@id="influence"]/a[@target]/text()')
+        loader1.add_xpath("attention_field_url", '//div[@id="influence"]/a[@target]/@href')
+        loader1.add_xpath("abstract", '//div[@class="taintro"]/text()')
 
-        # todo: fans,abstract, attention_field, attention_field_url,stock_focused_on,person_he_care_count,person_he_care,stock
+
+        # todo: fans,stock_focused_on,person_he_care,stock 都需要在filepipeline中写ajax 请求吗，将剩下的字段补充完整。
 
 
 
