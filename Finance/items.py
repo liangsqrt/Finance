@@ -177,7 +177,7 @@ class PublisherInfoMongo(Document):
     attention_field_url = URLField()
     abstract = StringField()
     visit_count = IntField()
-    stock_focused_on = ListField()
+    # stock_focused_on = ListField()
     his_stock_count = IntField()
     person_he_care_count = IntField()
     fans_count = IntField()

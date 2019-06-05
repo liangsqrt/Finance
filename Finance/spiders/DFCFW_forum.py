@@ -318,33 +318,40 @@ class DFCFW_news(CrawlSpider):
         item1 = loader1.load_item()
         yield item1
 
-        loader1 = ItemLoader(response, PublisherInfo())
-        loader1.add_value("publish_user_href", response.url)
-        loader1.add_xpath("publish_user_name", '//div[@class="taname"]/text()', lambda x:x.strip())
-        loader1.add_xpath("influence", "//div[@id='influence']//span/@data-influence", lambda x:int(x))
-        loader1.add_xpath("publish_user_id",
+        loader2 = ItemLoader(response, PublisherInfo())
+        loader2.add_value("publish_user_href", response.url)
+        loader2.add_xpath("publish_user_name", '//div[@class="taname"]/text()', lambda x:x.strip())
+        loader2.add_xpath("influence", "//div[@id='influence']//span/@data-influence", lambda x:int(x))
+        loader2.add_xpath("publish_user_id",
                           "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/../../a/@href",
                           lambda x: x.strip("/"))
-        loader1.add_xpath("his_stock_count",
+        loader2.add_xpath("his_stock_count",
                           "//div[@class='gbbody']//div[@class='tanums']//td/a/em/text()",
                           lambda x: int(x.strip()))
-        loader1.add_xpath("fans_count",
+        loader2.add_xpath("fans_count",
                           "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/text()",
                           lambda x: int(x.strip()))
-        loader1.add_xpath("person_he_care_count",
+        loader2.add_xpath("person_he_care_count",
                           "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/text()",
                           lambda x: int(x.strip()))
-        loader1.add_value("visit_count",
+        loader2.add_value("visit_count",
                           response.xpath('//div[@class="sumfw"]//span[contains(text(), "次")]/text()').extract_first(),
                           lambda x: x.strip("次"))
-        loader1.add_value("register_time", response.xpath("//div[@id='influence']//span[@style]").re("\((.*)\)"))
-        loader1.add_value("forum_age", response.xpath("//div[@id='influence']//span/text()").extract_first(0))
-        loader1.add_xpath("attention_field", '//div[@id="influence"]/a[@target]/text()')
-        loader1.add_xpath("attention_field_url", '//div[@id="influence"]/a[@target]/@href')
-        loader1.add_xpath("abstract", '//div[@class="taintro"]/text()')
+        loader2.add_value("register_time", response.xpath("//div[@id='influence']//span[@style]").re("\((.*)\)"))
+        loader2.add_value("forum_age", response.xpath("//div[@id='influence']//span/text()").extract_first(0))
+        loader2.add_xpath("attention_field", '//div[@id="influence"]/a[@target]/text()')
+        loader2.add_xpath("attention_field_url", '//div[@id="influence"]/a[@target]/@href')
+        loader2.add_xpath("abstract", '//div[@class="taintro"]/text()')
+
+        loader2.add_value("fans", response.url+"/fans")
+        loader2.add_value("his_stock", "http://iguba.eastmoney.com/interf/stocklist.aspx")
+        loader2.add_value("person_he_care", response.url + "/tafollow")
+
+        item2 = loader2.load_item()
+        yield item2
 
 
-        # todo: fans,stock_focused_on,person_he_care,stock 都需要在filepipeline中写ajax 请求吗，将剩下的字段补充完整。
+        # todo: fans,stock_focused_on 都需要在filepipeline中写ajax 请求吗，将剩下的字段补充完整。
 
 
 

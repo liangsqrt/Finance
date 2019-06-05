@@ -69,7 +69,7 @@ DEFAULT_REQUEST_HEADERS = {
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    # 'Finance.pipelines.DFCFWPipeline': 301,
-   'Finance.pipelines.save_mongo': 302,
+   'Finance.pipelines.SaveDataByMongo': 302,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
