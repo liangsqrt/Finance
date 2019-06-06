@@ -4,8 +4,6 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
-
-
 from Finance.items import RawHtml
 from Finance.other_moudle import create_filename
 import pymongo
@@ -19,15 +17,14 @@ import pickle
 from Finance.items import *
 from scrapy.pipelines.media import MediaPipeline
 import scrapy
+from scrapy.utils.misc import arg_to_iter
+from twisted.internet.defer import DeferredList
 
-
-
-
-BASIC_FILE="E:/data_DFCFW_news"
-BASIC_FILE2='E:/data2_DFCFW_news_2'
-if platform.system()=='Linux':#BigDATA's workstation
-    BASIC_FILE='/media/liang/store1/data_DFCFW_news'
-    BASIC_FILE2='/media/liang/store1/data_DFCFW_news2'
+BASIC_FILE = "E:/data_DFCFW_news"
+BASIC_FILE2 = 'E:/data2_DFCFW_news_2'
+if platform.system() == 'Linux':  # BigDATA's workstation
+    BASIC_FILE = '/media/liang/store1/data_DFCFW_news'
+    BASIC_FILE2 = '/media/liang/store1/data_DFCFW_news2'
 
 
 
@@ -40,13 +37,13 @@ class FinancePipeline(object):
 
 class DFCFWPipeline(object):
     def __init__(self):
-        self.client=pymongo.MongoClient('localhost',27017)
-        self.COL=self.client['Finance']
-        self.DB=self.COL['DFCFW10_4']
-        self.DB_DFCFW_relation=self.COL['DFCFW_md5_url']
-        self.DB_publish_user=self.COL['DFCFW_publish_user']
+        self.client = pymongo.MongoClient('localhost', 27017)
+        self.COL = self.client['Finance']
+        self.DB = self.COL['DFCFW10_4']
+        self.DB_DFCFW_relation = self.COL['DFCFW_md5_url']
+        self.DB_publish_user = self.COL['DFCFW_publish_user']
 
-    def process_item(self,item,spider):
+    def process_item(self, item, spider):
         if isinstance(item, RawHtml):
             item_dict = dict(item)
             plant_form = item['board'][0]
@@ -75,16 +72,16 @@ class DFCFWPipeline(object):
         '''
         try:
             publish_time_array = self.examing_datetime_format(publish_time)
-            publish_time_stramp=time.mktime(publish_time_array)
-            publish_time_stramp_str_13=str(int(publish_time_stramp*1000))
+            publish_time_stramp = time.mktime(publish_time_array)
+            publish_time_stramp_str_13 = str(int(publish_time_stramp*1000))
         except:
-            print ('wrong in create publish_time_stramp_str_13')
-            publish_time_stramp_str_13='time_wrong'
+            print('wrong in create publish_time_stramp_str_13')
+            publish_time_stramp_str_13 = 'time_wrong'
 
-        urlhashlib=hashlib.md5(urlOruid.encode('utf-8')).hexdigest()
-        urlhashlib_str=str(urlhashlib)
+        urlhashlib = hashlib.md5(urlOruid.encode('utf-8')).hexdigest()
+        urlhashlib_str = str(urlhashlib)
 
-        CNname=getNameCN(plant_form)
+        CNname = getNameCN(plant_form)
 
         try:
             publish_time_split_2=publish_time.split(' ')
@@ -268,6 +265,46 @@ class SaveDataByMongo(object):
             mongoitem.save()
         except Exception as e:
             print(e)
+        # return item
+
+
+class DFCFWFansPipeline(MediaPipeline):
+    def open_spider(self, spider):
+        self.headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
+        }
+        self.spiderinfo = self.SpiderInfo(spider)
+
+    def get_media_requests(self, item, info):
+        stock_url = item["fans"]
+        yield scrapy.Request(url=stock_url, headers=self.headers, method="GET")
+
+    def item_completed(self, results, item, info):
+        del item["fans"]
+        del item["person_he_care"]
+        if results[0][0]:
+            try:
+                response = results[0][1]
+                fanslist = response.xpath("//div[@class='tasidb2']//ul[@class='tasiderplist']//li/a/@href").extract()
+                fanslist = [x.strip().strip("/") for x in fanslist]
+                person_he_care = response.xpath("//div[@class='tasidb1']//ul[@class='tasiderplist']//li/a/@href").extract()
+                person_he_care = [x.strip().strip("/") for x in person_he_care]
+                item["person_he_care"] = list(set(person_he_care))
+                item["fans"] = list(set(fanslist))
+            except Exception as e:
+                print(e)
+        return item
+
+    def process_item(self, item, spider):
+        if isinstance(item, PublisherInfo):
+            info = self.spiderinfo
+            requests = arg_to_iter(self.get_media_requests(item, info))
+            dlist = [self._process_request(r, info) for r in requests]
+            dfd = DeferredList(dlist, consumeErrors=1)
+            return dfd.addCallback(self.item_completed, item, info)
+        else:
+            return item
 
 
 class DFCFWStockPipeline(MediaPipeline):
@@ -282,15 +319,75 @@ class DFCFWStockPipeline(MediaPipeline):
             "type": "hs",
             "uid": "4162005331760506"
         }
+        self.spiderinfo = self.SpiderInfo(spider)
 
     def get_media_requests(self, item, info):
-        stock_url = item["fans"]
+        stock_url = item["his_stock"]
+        if isinstance(item["his_stock_count"], list):  # 莫名其妙
+            item["his_stock_count"] = item["his_stock_count"][0]
         self.data["uid"] = item["publish_user_id"]
         yield scrapy.FormRequest(url=stock_url, headers=self.headers, method="post", formdata=self.data)
 
     def item_completed(self, results, item, info):
-        pass
+        del item["his_stock"]
+        if results[0][0]:
+            response = results[0][1]
+            try:
+                stock_list = json.loads(response.text)
+                stock_list = [x.strip().split("|")[0] for x in stock_list["data"]["stklist"].split(",")]
+                item["his_stock"] = stock_list
+            except Exception as e:
+                print(e)
+        return item
 
+    def process_item(self, item, spider):
+        if isinstance(item, PublisherInfo):
+            info = self.spiderinfo
+            requests = arg_to_iter(self.get_media_requests(item, info))
+            dlist = [self._process_request(r, info) for r in requests]
+            dfd = DeferredList(dlist, consumeErrors=1)
+            return dfd.addCallback(self.item_completed, item, info)
+        else:
+            return item
+
+
+class DFCFWPersonHeCarePipeline(MediaPipeline):
+    """
+    没必要，在跟fans页面的内容一模一样
+    """
+    def open_spider(self, spider):
+        self.headers = {
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
+            }
+        self.spiderinfo = self.SpiderInfo(spider)
+
+    def get_media_requests(self, item, info):
+        person_her_care = item["person_he_care"]
+        yield scrapy.FormRequest(url=person_her_care, headers=self.headers, method="GET")
+
+    def item_completed(self, results, item, info):
+        del item["person_he_care"]
+        if results[0][0]:
+            response = results[0][1]
+            try:
+                stock_list = json.loads(response.text)
+                stock_list = [x.strip().split("|")[0] for x in stock_list["data"]["stklist"].split(",")]
+                item["his_stock"] = stock_list
+            except Exception as e:
+                print(e)
+
+        print(item)
+
+    def process_item(self, item, spider):
+        if isinstance(item, PublisherInfo):
+            info = self.spiderinfo
+            requests = arg_to_iter(self.get_media_requests(item, info))
+            dlist = [self._process_request(r, info) for r in requests]
+            dfd = DeferredList(dlist, consumeErrors=1)
+            return dfd.addCallback(self.item_completed, item, info)
+        else:
+            return item
 
 
 

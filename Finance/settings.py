@@ -69,7 +69,9 @@ DEFAULT_REQUEST_HEADERS = {
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    # 'Finance.pipelines.DFCFWPipeline': 301,
-   'Finance.pipelines.SaveDataByMongo': 302,
+   'Finance.pipelines.SaveDataByMongo': 303,
+   'Finance.pipelines.DFCFWFansPipeline': 302,
+   'Finance.pipelines.DFCFWStockPipeline': 301,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -96,9 +98,10 @@ AUTOTHROTTLE_ENABLED = True
 
 # Finance_DFCFW_tieba_path='E:/data_ll'#/media/liang/新加卷3
 Finance_DFCFW_tieba_path='/media/passager/新加卷/2/DFCFW_HTML'
-REDIS_HOST='127.0.0.1'
-REDIS_PORT='6379'
-REDIS_PARAMS={'db':1}
+# REDIS_HOST = '127.0.0.1'
+REDIS_HOST = '192.168.31.107'
+REDIS_PORT = '6379'
+REDIS_PARAMS = {'db': 1}
 
 
 SCHEDULER="scrapy_redis.scheduler.Scheduler"

@@ -14,24 +14,27 @@ import json
 class DFCFW_news(CrawlSpider):
     name = 'DFCFW_news'
 
+    # 这里的顺序不能改变，redis中就靠顺序来定位callback。
     rules = (
-        # Rule(LinkExtractor(allow=r'http\:\/\/finance\.eastmoney\.com\/\w.+\/\d*\.html'), callback='parse_content_finance', follow=False),
-        # Rule(LinkExtractor(allow=r'http\:\/\/stock\.eastmoney\.com\/news\/\d+\,\d.+\.html'), callback='parse_content_stock', follow=False),
+        Rule(LinkExtractor(allow=r'http\:\/\/finance\.eastmoney\.com\/\w.+\/\d*\.html'), callback='parse_content_finance', follow=False),
+        Rule(LinkExtractor(allow=r'http\:\/\/stock\.eastmoney\.com\/news\/\d+\,\d.+\.html'), callback='parse_content_stock', follow=False),
         Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/news\,\w*?\,\d.+\.html'),
-             callback='parse_forum', follow=True),
-        Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/news\,\S+\,\d.+\.html'),
              callback='parse_forum', follow=True),
         Rule(LinkExtractor(allow=r'http\:\/\/iguba\.eastmoney\.com\/\d*'),
              callback="parse_person", follow=True),
+        # Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/news\,\S+\,\d.+\.html'),
+        #      callback='parse_forum', follow=True),
+        # Rule(LinkExtractor(allow=r'http\:\/\/iguba\.eastmoney\.com\/\d*'),
+        #      callback="parse_person", follow=True),
         Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/.*'), follow=True),
 
 
     )
-    start_urls = [
-        "http://guba.eastmoney.com/default,0_1.html",
-        "http://guba.eastmoney.com/default,99_1.html",
-
-    ]
+    # start_urls = [
+    #     "http://guba.eastmoney.com/default,0_1.html",
+    #     "http://guba.eastmoney.com/default,99_1.html",
+    #
+    # ]
 
 
     def parse_content_finance(self,response):
@@ -175,7 +178,7 @@ class DFCFW_news(CrawlSpider):
         loader2.add_value("topic_id", topic_id)
         loader2.add_xpath("publish_user_href", '//div[@id="zwconttbn"]//strong/a/@href', lambda x: x[0] if x else None)
         loader2.add_xpath("publish_user", '//div[@id="zwconttbn"]//strong/a/text()', lambda x: x[0] if x else None)
-        loader2.add_xpath("user_device", response.xpath(
+        loader2.add_value("user_device", response.xpath(
             '//div[@class="zwfbtime"]//text()').extract_first("").strip().split(" ")[-1])
         loader2.add_value(
             "publish_time",
@@ -196,6 +199,8 @@ class DFCFW_news(CrawlSpider):
             }}, callback=self.parse_forum_next)
         else:
             yield item2
+
+        yield scrapy.Request(url=item2["publish_user_href"], headers=response.request.headers, callback=self.parse_person)
 
         for comment_div in response.xpath("//div[contains(@class, 'zwli clearfix')]"):
             reply_item = Replay()
@@ -225,6 +230,7 @@ class DFCFW_news(CrawlSpider):
             reply_item["replay_to"] = str(reply_to)
             reply_item["content"] = content
             yield reply_item
+            yield scrapy.Request(url=publish_user_info_href, headers=response.request.headers, callback=self.parse_person)
 
 
     def parse_forum_next(self, response):
@@ -304,8 +310,8 @@ class DFCFW_news(CrawlSpider):
 
 
     def parse_person(self, response):
-        jsdata = response.selector.xpath("itemdata = (\{.*\})\;")
-        datajson = json.loads(jsdata)
+        jsdata = response.selector.re("itemdata = (\{.*\})\;")
+        datajson = json.loads(jsdata[0])
 
         #  保存原始网页信息
         loader1 = ItemLoader(response=response, item=RawHtml())
@@ -318,25 +324,25 @@ class DFCFW_news(CrawlSpider):
         item1 = loader1.load_item()
         yield item1
 
-        loader2 = ItemLoader(response, PublisherInfo())
+        loader2 = ItemLoader(response=response, item=PublisherInfo())
         loader2.add_value("publish_user_href", response.url)
-        loader2.add_xpath("publish_user_name", '//div[@class="taname"]/text()', lambda x:x.strip())
-        loader2.add_xpath("influence", "//div[@id='influence']//span/@data-influence", lambda x:int(x))
+        loader2.add_xpath("publish_user_name", '//div[@class="taname"]/text()', lambda x: x[0].strip())
+        loader2.add_xpath("influence", "//div[@id='influence']//span/@data-influence", lambda x: int(x[0]))
         loader2.add_xpath("publish_user_id",
                           "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/../../a/@href",
-                          lambda x: x.strip("/"))
-        loader2.add_xpath("his_stock_count",
-                          "//div[@class='gbbody']//div[@class='tanums']//td/a/em/text()",
-                          lambda x: int(x.strip()))
+                          lambda x: x[0].strip("/") if x else "")
+        loader2.add_value("his_stock_count",
+                          response.xpath("//div[@class='gbbody']//div[@class='tanums']//td[1]/a/em/text()").extract_first(),
+                          lambda x: int(x[0].strip()) if x else 0)
         loader2.add_xpath("fans_count",
                           "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/text()",
-                          lambda x: int(x.strip()))
+                          lambda x: int(x[0].strip()) if x else 0)
         loader2.add_xpath("person_he_care_count",
                           "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/text()",
-                          lambda x: int(x.strip()))
+                          lambda x: int(x[0].strip()) if x else 0)
         loader2.add_value("visit_count",
                           response.xpath('//div[@class="sumfw"]//span[contains(text(), "次")]/text()').extract_first(),
-                          lambda x: x.strip("次"))
+                          lambda x: x[0].strip("次") if x else 0)
         loader2.add_value("register_time", response.xpath("//div[@id='influence']//span[@style]").re("\((.*)\)"))
         loader2.add_value("forum_age", response.xpath("//div[@id='influence']//span/text()").extract_first(0))
         loader2.add_xpath("attention_field", '//div[@id="influence"]/a[@target]/text()')

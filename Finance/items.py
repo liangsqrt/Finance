@@ -11,7 +11,7 @@ from mongoengine.fields import *
 from mongoengine import connect
 from scrapy.loader.processors import TakeFirst
 
-connect('东方财富网', host="localhost", port=27017)
+connect('东方财富网', host="192.168.31.107", port=27017)
 
 
 class FinanceItem(scrapy.Item):
@@ -171,7 +171,7 @@ class PublisherInfoMongo(Document):
     # guanzhu_num = IntField()
     fans = ListField()  # 他的粉丝
     influence = FloatField()  # 影响力
-    forum_age = FloatField()  # 吧龄
+    forum_age = StringField()  # 吧龄
     register_time = DateTimeField()  # 注册时间s
     attention_field = StringField()  # 能力圈
     attention_field_url = URLField()
