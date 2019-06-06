@@ -330,7 +330,7 @@ class DFCFW_news(CrawlSpider):
         loader2.add_xpath("influence", "//div[@id='influence']//span/@data-influence", lambda x: int(x[0]))
         loader2.add_xpath("publish_user_id",
                           "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/../../a/@href",
-                          lambda x: x[0].strip("/") if x else "")
+                          lambda x: x[0].strip("/").strip("/fans") if x else "")
         loader2.add_value("his_stock_count",
                           response.xpath("//div[@class='gbbody']//div[@class='tanums']//td[1]/a/em/text()").extract_first(),
                           lambda x: int(x[0].strip()) if x else 0)
