@@ -338,7 +338,7 @@ class DFCFW_news(CrawlSpider):
                           "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/text()",
                           lambda x: int(x[0].strip()) if x else 0)
         loader2.add_xpath("person_he_care_count",
-                          "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/text()",
+                          "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'tafollow')]/em/text()",
                           lambda x: int(x[0].strip()) if x else 0)
         loader2.add_value("visit_count",
                           response.xpath('//div[@class="sumfw"]//span[contains(text(), "次")]/text()').extract_first(),
