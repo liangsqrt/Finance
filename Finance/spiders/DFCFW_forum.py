@@ -327,7 +327,7 @@ class DFCFW_news(CrawlSpider):
         loader2 = ItemLoader(response=response, item=PublisherInfo())
         loader2.add_value("publish_user_href", response.url)
         loader2.add_xpath("publish_user_name", '//div[@class="taname"]/text()', lambda x: x[0].strip())
-        loader2.add_xpath("influence", "//div[@id='influence']//span/@data-influence", lambda x: int(x[0]))
+        loader2.add_xpath("influence", "//div[@id='influence']//span/@data-influence", lambda x: int(x[0]) if x else 0)
         loader2.add_xpath("publish_user_id",
                           "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/../../a/@href",
                           lambda x: x[0].strip("/").strip("/fans") if x else "")
