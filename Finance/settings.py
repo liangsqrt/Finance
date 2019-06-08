@@ -99,7 +99,7 @@ AUTOTHROTTLE_ENABLED = True
 # Finance_DFCFW_tieba_path='E:/data_ll'#/media/liang/新加卷3
 Finance_DFCFW_tieba_path='/media/passager/新加卷/2/DFCFW_HTML'
 # REDIS_HOST = '127.0.0.1'
-REDIS_HOST = '192.168.31.107'
+REDIS_HOST = '192.168.31.19'
 REDIS_PORT = '6379'
 REDIS_PARAMS = {'db': 1}
 

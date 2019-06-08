@@ -16,25 +16,21 @@ class DFCFW_news(CrawlSpider):
 
     # 这里的顺序不能改变，redis中就靠顺序来定位callback。
     rules = (
-        Rule(LinkExtractor(allow=r'http\:\/\/finance\.eastmoney\.com\/\w.+\/\d*\.html'), callback='parse_content_finance', follow=False),
-        Rule(LinkExtractor(allow=r'http\:\/\/stock\.eastmoney\.com\/news\/\d+\,\d.+\.html'), callback='parse_content_stock', follow=False),
+        # Rule(LinkExtractor(allow=r'http\:\/\/finance\.eastmoney\.com\/\w.+\/\d*\.html'), callback='parse_content_finance', follow=False),
+        # Rule(LinkExtractor(allow=r'http\:\/\/stock\.eastmoney\.com\/news\/\d+\,\d.+\.html'), callback='parse_content_stock', follow=False),
         Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/news\,\w*?\,\d.+\.html'),
              callback='parse_forum', follow=True),
         Rule(LinkExtractor(allow=r'http\:\/\/iguba\.eastmoney\.com\/\d*'),
              callback="parse_person", follow=True),
-        # Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/news\,\S+\,\d.+\.html'),
-        #      callback='parse_forum', follow=True),
-        # Rule(LinkExtractor(allow=r'http\:\/\/iguba\.eastmoney\.com\/\d*'),
-        #      callback="parse_person", follow=True),
         Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/.*'), follow=True),
 
 
     )
-    # start_urls = [
-    #     "http://guba.eastmoney.com/default,0_1.html",
-    #     "http://guba.eastmoney.com/default,99_1.html",
-    #
-    # ]
+    start_urls = [
+        "http://guba.eastmoney.com/default,0_1.html",
+        "http://guba.eastmoney.com/default,99_1.html",
+
+    ]
 
 
     def parse_content_finance(self,response):
