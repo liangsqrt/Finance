@@ -44,16 +44,27 @@ class SaveDataByRedis(object):
     def process_item(self, item, spider):
         try:
             item_dumped = pickle.dumps(item)
-
+            self.redis.lpush("all_data", item_dumped)
         except Exception as e:
             print(e)
         # return item
         del item
 
+    @classmethod
+    def from_crawler(cls, clawler):
+        settings = clawler.settings
+        s = cls()
+        s.settings = settings
+        return s
+
     def open_spider(self):
-        self.pool = redis.ConnectionPool(host=, port=self.redis_port, db=self.redis_db)
+        self.redis_host= self.settings.get("REDIS_HOST")
+        self.redis_port = self.settings.get("REDIS_PORT")
+        self.redis_passwd = self.settings.get("REDIS_PARAMS")["password"]
+        self.redis_db = self.settings.get("REDIS_PARAMS")["db"]
+        self.pool = redis.ConnectionPool(
+            host=self.redis_host, port=self.redis_port, db=self.redis_db, password=self.redis_passwd)
         self.redis = redis.Redis(connection_pool=self.pool)
-        self.thread_count = self.settings.get("COMSUMER_THREAD_COUNT")
 
 
 class DFCFWFansPipeline(MediaPipeline):

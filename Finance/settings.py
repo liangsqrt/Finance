@@ -70,7 +70,8 @@ DEFAULT_REQUEST_HEADERS = {
 ITEM_PIPELINES = {
    # 'Finance.pipelines.DFCFWPipeline': 301,
    # 'scrapy_redis.pipelines.RedisPipeline': 300,
-   'Finance.pipelines.SaveDataByMongo': 303,
+   # 'Finance.pipelines.SaveDataByMongo': 303,
+   'Finance.pipelines.SaveDataByRedis': 303,
    'Finance.pipelines.DFCFWFansPipeline': 302,
    'Finance.pipelines.DFCFWStockPipeline': 301,
 }
@@ -102,7 +103,10 @@ Finance_DFCFW_tieba_path='/media/passager/新加卷/2/DFCFW_HTML'
 # REDIS_HOST = '127.0.0.1'
 REDIS_HOST = '192.168.31.19'
 REDIS_PORT = '6379'
-REDIS_PARAMS = {'db': 1}
+REDIS_PARAMS = {
+    'db': 1,
+    'password': 'asd123456',
+}
 
 
 SCHEDULER="scrapy_redis.scheduler.Scheduler"
@@ -112,11 +116,15 @@ DUPEFILTER_CLASS="scrapy_redis.dupefilter.RFPDupeFilter"
 REACTOR_THREADPOOL_MAXSIZE = 100
 CONCURRENT_ITEMS = 500
 
-REDIS_PARAMS ={
-    'password': 'asd123456',
-}
+# REDIS_PARAMS ={
+#
+# }
 
 
 MONGO_HOST = "192.168.31.107"
 MONGO_PORT = 27017
 MONGO_COL = "东方财富网"
+
+
+COMSUMER_THREAD_COUNT = 1
+

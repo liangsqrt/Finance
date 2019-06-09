@@ -5,8 +5,10 @@
 # @Site    : 
 # @File    : item_consumer.py
 # @Software: PyCharm
-from Finance.pipelines import *
 from scrapy.utils.project import get_project_settings
+get_project_settings()
+from Finance.pipelines import *
+from Finance.items import *
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy import and_
@@ -19,6 +21,7 @@ import pickle
 from Finance.spiders.DFCFW_forum import DFCFW_news
 import prometheus_client
 from prometheus_client.core import CollectorRegistry
+
 
 
 connect('东方财富网', host="192.168.31.107", port=27017)
@@ -168,7 +171,8 @@ class MongoConsumer(object):
         self.redis_db = self.settings.get("REDIS_DB")
         self.redis_passwd = self.settings.get("REDIS_PARAMS")["password"]
 
-        self.pool = redis.ConnectionPool(host=self.redis_host, port=self.redis_port, db=self.redis_db)
+        self.pool = redis.ConnectionPool(
+            host=self.redis_host, port=self.redis_port, db=self.redis_db, password=self.redis_passwd)
         self.redis = redis.Redis(connection_pool=self.pool)
         self.thread_count = self.settings.get("COMSUMER_THREAD_COUNT")
 
@@ -193,6 +197,7 @@ class MongoConsumer(object):
             time.sleep(1)
 
     def push_data_to_mongo(self):
+        save_data_to_mongo_pipeline = SaveDataByMongo()
         while True:
             item = self.redis.lpop("all_data")
             if not item:
@@ -201,12 +206,16 @@ class MongoConsumer(object):
                 continue
             gauge.labels("wait", "wait", "wait").set(0)
             item = pickle.loads(item)
+            try:
+                save_data_to_mongo_pipeline.process_item(item)
+            except Exception as e:
+                print(e)
 
 
 
 
 if __name__ == '__main__':
-    app.sqlcomsumenr = SQLConsumer()
+    app.sqlcomsumenr = MongoConsumer()
     app.sqlcomsumenr.run()
     app.run(host="0.0.0.0",port=6802)
 
