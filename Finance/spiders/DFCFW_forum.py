@@ -9,6 +9,7 @@ import time
 import datetime
 import hashlib
 import json
+from copy import deepcopy
 
 
 class DFCFW_news(CrawlSpider):
@@ -189,14 +190,16 @@ class DFCFW_news(CrawlSpider):
         loader2.add_value("reply_count", replay_count)
         item2 = loader2.load_item()
         next_url = deal_next_page(response)
+
+        item2_copy = deepcopy(item2)
         if next_url:
             yield scrapy.Request(url=next_url, headers=response.headers, meta={"pre_data": {
-                "item": item2
+                "item": item2_copy
             }}, callback=self.parse_forum_next)
         else:
             yield item2
 
-        yield scrapy.Request(url=item2["publish_user_href"], headers=response.request.headers, callback=self.parse_person)
+        yield scrapy.Request(url=item2_copy["publish_user_href"], headers=response.request.headers, callback=self.parse_person)
 
         for comment_div in response.xpath("//div[contains(@class, 'zwli clearfix')]"):
             reply_item = Replay()
@@ -253,7 +256,7 @@ class DFCFW_news(CrawlSpider):
                     next_page = domain_url + next_page
                     return next_page
 
-        last_item = response.meta["pre_data"]["item"]
+        last_item = deepcopy(response.meta["pre_data"]["item"])
         topic_id = last_item["topic_id"]
 
         #  先保存原始网页内容
@@ -306,8 +309,8 @@ class DFCFW_news(CrawlSpider):
 
 
     def parse_person(self, response):
-        jsdata = response.selector.re("itemdata = (\{.*\})\;")
-        datajson = json.loads(jsdata[0])
+        # jsdata = response.selector.re("itemdata = (\{.*\})\;")
+        # datajson = json.loads(jsdata[0])
 
         #  保存原始网页信息
         loader1 = ItemLoader(response=response, item=RawHtml())

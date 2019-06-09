@@ -56,7 +56,7 @@ DEFAULT_REQUEST_HEADERS = {
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 # DOWNLOADER_MIDDLEWARES = {
 #    # 'Finance.middlewares.MyCustomDownloaderMiddleware': 543,
-#    'Finance.middlewares.HttpProxyMiddleware':542,
+#    'Finance.middlewares.add_proxy_middleware': 542,
 # }
 
 # Enable or disable extensions
@@ -69,6 +69,7 @@ DEFAULT_REQUEST_HEADERS = {
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    # 'Finance.pipelines.DFCFWPipeline': 301,
+   # 'scrapy_redis.pipelines.RedisPipeline': 300,
    'Finance.pipelines.SaveDataByMongo': 303,
    'Finance.pipelines.DFCFWFansPipeline': 302,
    'Finance.pipelines.DFCFWStockPipeline': 301,
@@ -114,3 +115,8 @@ CONCURRENT_ITEMS = 500
 REDIS_PARAMS ={
     'password': 'asd123456',
 }
+
+
+MONGO_HOST = "192.168.31.107"
+MONGO_PORT = 27017
+MONGO_COL = "东方财富网"

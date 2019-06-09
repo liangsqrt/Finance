@@ -19,7 +19,8 @@ from scrapy.pipelines.media import MediaPipeline
 import scrapy
 from scrapy.utils.misc import arg_to_iter
 from twisted.internet.defer import DeferredList
-
+import pickle
+import redis
 
 
 class FinancePipeline(object):
@@ -32,9 +33,27 @@ class SaveDataByMongo(object):
         try:
             mongoitem = item.__create_sqlalchemy_item__()
             mongoitem.save()
+            del mongoitem
         except Exception as e:
             print(e)
         # return item
+        del item
+
+
+class SaveDataByRedis(object):
+    def process_item(self, item, spider):
+        try:
+            item_dumped = pickle.dumps(item)
+
+        except Exception as e:
+            print(e)
+        # return item
+        del item
+
+    def open_spider(self):
+        self.pool = redis.ConnectionPool(host=, port=self.redis_port, db=self.redis_db)
+        self.redis = redis.Redis(connection_pool=self.pool)
+        self.thread_count = self.settings.get("COMSUMER_THREAD_COUNT")
 
 
 class DFCFWFansPipeline(MediaPipeline):

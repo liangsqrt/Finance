@@ -8,11 +8,21 @@
 from scrapy import signals
 import redis
 import json
+import base64
 
 
 redis_connection_pool=redis.ConnectionPool(host='localhost', port=6379)
 redis1 = redis.Redis(connection_pool=redis_connection_pool)
 redis_proxy_list_name='proxy_dict_list'
+
+
+proxyServer = "http://http-pro.abuyun.com:9010"
+proxyUser = "HK3M01L5WXTM1S6P"
+proxyPass = "8A04E5328A18FC45"
+
+proxyAuth = "Basic " + base64.urlsafe_b64encode(bytes((proxyUser + ":" + proxyPass), "ascii")).decode("utf8")
+
+
 
 
 
@@ -103,7 +113,7 @@ class FinanceProxySaveMiddleware(object):
     # def process_response(self,request,response,spider):
     def process_spider_input(self, response, spider):
         try:
-            if response.status not in [403,429]:
+            if response.status not in [403, 429]:
                 proxy_dict=response.meta['info_proxy']
                 proxy_dict_json=json.dumps(proxy_dict)
                 redis1.lpush(redis_proxy_list_name,proxy_dict_json)
@@ -115,3 +125,9 @@ class FinanceProxySaveMiddleware(object):
 
     def process_spider_exception(self,response, exception, spider):
         return None
+
+
+class add_proxy_middleware(object):
+    def process_request(self, request, spider):
+        request.meta["proxy"] = proxyServer
+        request.headers["Proxy-Authorization"] = proxyAuth
