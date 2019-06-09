@@ -168,7 +168,7 @@ class MongoConsumer(object):
 
         self.redis_host = self.settings.get("REDIS_HOST")
         self.redis_port = self.settings.get("REDIS_PORT")
-        self.redis_db = self.settings.get("REDIS_DB")
+        self.redis_db = self.settings.get("REDIS_PARAMS")["db"]
         self.redis_passwd = self.settings.get("REDIS_PARAMS")["password"]
 
         self.pool = redis.ConnectionPool(
@@ -198,6 +198,7 @@ class MongoConsumer(object):
 
     def push_data_to_mongo(self):
         save_data_to_mongo_pipeline = SaveDataByMongo()
+        virtual_spider = VirtualSpider()
         while True:
             item = self.redis.lpop("all_data")
             if not item:
@@ -207,7 +208,10 @@ class MongoConsumer(object):
             gauge.labels("wait", "wait", "wait").set(0)
             item = pickle.loads(item)
             try:
-                save_data_to_mongo_pipeline.process_item(item)
+                print("si saving")
+                save_data_to_mongo_pipeline.process_item(item, virtual_spider)
+                print("saving down")
+                print("saving down")
             except Exception as e:
                 print(e)
 

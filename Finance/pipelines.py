@@ -57,7 +57,7 @@ class SaveDataByRedis(object):
         s.settings = settings
         return s
 
-    def open_spider(self):
+    def open_spider(self, spider):
         self.redis_host= self.settings.get("REDIS_HOST")
         self.redis_port = self.settings.get("REDIS_PORT")
         self.redis_passwd = self.settings.get("REDIS_PARAMS")["password"]

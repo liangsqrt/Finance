@@ -156,6 +156,7 @@ class DFCFW_news(CrawlSpider):
 
 
         #  保存原始网页信息
+        response_copy = deepcopy(response)
         loader1 = ItemLoader(response=response, item=RawHtml())
         loader1.add_value('board', 'DFCFW_guba')
         loader1.add_value('url', response.url)
@@ -193,13 +194,13 @@ class DFCFW_news(CrawlSpider):
 
         item2_copy = deepcopy(item2)
         if next_url:
-            yield scrapy.Request(url=next_url, headers=response.headers, meta={"pre_data": {
+            yield scrapy.Request(url=next_url, headers=response_copy.headers, meta={"pre_data": {
                 "item": item2_copy
             }}, callback=self.parse_forum_next)
         else:
             yield item2
 
-        yield scrapy.Request(url=item2_copy["publish_user_href"], headers=response.request.headers, callback=self.parse_person)
+        yield scrapy.Request(url=item2_copy["publish_user_href"], headers=response_copy.request.headers, callback=self.parse_person)
 
         for comment_div in response.xpath("//div[contains(@class, 'zwli clearfix')]"):
             reply_item = Replay()
@@ -229,7 +230,7 @@ class DFCFW_news(CrawlSpider):
             reply_item["replay_to"] = str(reply_to)
             reply_item["content"] = content
             yield reply_item
-            yield scrapy.Request(url=publish_user_info_href, headers=response.request.headers, callback=self.parse_person)
+            yield scrapy.Request(url=publish_user_info_href, headers=response_copy.request.headers, callback=self.parse_person)
 
 
     def parse_forum_next(self, response):
@@ -302,8 +303,9 @@ class DFCFW_news(CrawlSpider):
             yield reply_item
 
         next_url = deal_next_page(response)
+        response_copy = deepcopy(response)
         if next_url:
-            yield scrapy.Request(url=next_url, headers=response.headers, meta={"pre_data": {
+            yield scrapy.Request(url=next_url, headers=response_copy.headers, meta={"pre_data": {
                 "item": last_item
             }}, callback=self.parse_forum_next)
 

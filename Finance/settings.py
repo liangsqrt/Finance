@@ -104,7 +104,7 @@ Finance_DFCFW_tieba_path='/media/passager/新加卷/2/DFCFW_HTML'
 REDIS_HOST = '192.168.31.19'
 REDIS_PORT = '6379'
 REDIS_PARAMS = {
-    'db': 1,
+    'db': 0,
     'password': 'asd123456',
 }
 
