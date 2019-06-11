@@ -21,6 +21,7 @@ from scrapy.utils.misc import arg_to_iter
 from twisted.internet.defer import DeferredList
 import pickle
 import redis
+from copy import deepcopy
 
 
 class FinancePipeline(object):
@@ -77,6 +78,7 @@ class DFCFWFansPipeline(MediaPipeline):
 
     def get_media_requests(self, item, info):
         stock_url = item["fans"]
+        headers =
         yield scrapy.Request(url=stock_url, headers=self.headers, method="GET")
 
     def item_completed(self, results, item, info):
