@@ -30,7 +30,6 @@ class DFCFW_news(CrawlSpider):
     start_urls = [
         "http://guba.eastmoney.com/default,0_1.html",
         "http://guba.eastmoney.com/default,99_1.html",
-
     ]
 
 
@@ -91,9 +90,9 @@ class DFCFW_news(CrawlSpider):
 
         def deal_publish_time(publish_time):
             print(publish_time)
-            year_str=publish_time[0:4]
-            mounth_str=publish_time[4:6]
-            day_str=publish_time[6:8]
+            year_str = publish_time[0:4]
+            mounth_str = publish_time[4:6]
+            day_str = publish_time[6:8]
 
             return year_str+'-'+mounth_str+'-'+day_str+' 00:00:00'
 
@@ -106,8 +105,7 @@ class DFCFW_news(CrawlSpider):
         loader1.add_value('publish_time', response.url.split(',')[-1].split('.')[0],deal_publish_time)
         loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
         loader1.add_value('id', hashlib.md5(response.url.encode('utf-8')).digest())
-
-        item1=loader1.load_item()
+        item1 = loader1.load_item()
         return item1
 
 
@@ -153,7 +151,6 @@ class DFCFW_news(CrawlSpider):
                     next_page = domain_url + next_page
                     return next_page
 
-
         #  保存原始网页信息
         response_copy_headers = deepcopy(response.request.headers)
         loader1 = ItemLoader(response=response, item=RawHtml())
@@ -198,8 +195,8 @@ class DFCFW_news(CrawlSpider):
             }}, callback=self.parse_forum_next)
         else:
             yield item2
-
-        yield scrapy.Request(url=item2_copy["publish_user_href"], headers=response_copy_headers, callback=self.parse_person)
+        publish_user_href_next = deepcopy(item2_copy["publish_user_href"])
+        yield scrapy.Request(url=publish_user_href_next, headers=response_copy_headers, callback=self.parse_person)
 
         for comment_div in response.xpath("//div[contains(@class, 'zwli clearfix')]"):
             reply_item = Replay()
@@ -229,6 +226,7 @@ class DFCFW_news(CrawlSpider):
             reply_item["replay_to"] = str(reply_to)
             reply_item["content"] = content
             yield reply_item
+
             yield scrapy.Request(url=publish_user_info_href, headers=response_copy_headers, callback=self.parse_person)
 
 

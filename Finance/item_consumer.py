@@ -185,8 +185,8 @@ class MongoConsumer(object):
         thread.start()
 
     def eject_mongo_loader(self):
+        threads_list = []
         while True:
-            threads_list =[]
             for i in threads_list:
                 if not i.is_alive():
                     threads_list.remove(i)
