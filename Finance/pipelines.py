@@ -78,8 +78,8 @@ class DFCFWFansPipeline(MediaPipeline):
 
     def get_media_requests(self, item, info):
         stock_url = item["fans"]
-        headers =
-        yield scrapy.Request(url=stock_url, headers=self.headers, method="GET")
+        headers = deepcopy(self.headers)
+        return scrapy.Request(url=stock_url, headers=headers, method="GET")
 
     def item_completed(self, results, item, info):
         del item["fans"]

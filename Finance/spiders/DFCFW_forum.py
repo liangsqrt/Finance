@@ -190,13 +190,12 @@ class DFCFW_news(CrawlSpider):
 
         item2_copy = deepcopy(item2)
         if next_url:
-            yield scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
+            return scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
                 "item": item2_copy
             }}, callback=self.parse_forum_next)
         else:
             yield item2
         publish_user_href_next = deepcopy(item2_copy["publish_user_href"])
-        yield scrapy.Request(url=publish_user_href_next, headers=response_copy_headers, callback=self.parse_person)
 
         for comment_div in response.xpath("//div[contains(@class, 'zwli clearfix')]"):
             reply_item = Replay()
@@ -226,8 +225,9 @@ class DFCFW_news(CrawlSpider):
             reply_item["replay_to"] = str(reply_to)
             reply_item["content"] = content
             yield reply_item
+        return scrapy.Request(url=publish_user_href_next, headers=response_copy_headers, callback=self.parse_person)
 
-            yield scrapy.Request(url=publish_user_info_href, headers=response_copy_headers, callback=self.parse_person)
+            # yield scrapy.Request(url=publish_user_info_href, headers=response_copy_headers, callback=self.parse_person)
 
 
     def parse_forum_next(self, response):
@@ -302,7 +302,7 @@ class DFCFW_news(CrawlSpider):
         next_url = deal_next_page(response)
         response_copy_headers = deepcopy(response.request.headers)
         if next_url:
-            yield scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
+            return scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
                 "item": last_item
             }}, callback=self.parse_forum_next)
 
