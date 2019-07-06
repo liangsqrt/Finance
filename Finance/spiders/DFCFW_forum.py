@@ -12,7 +12,7 @@ import json
 from copy import deepcopy
 
 
-class DFCFW_news(RedisCrawlSpider):
+class DFCFW_news(CrawlSpider):
     name = 'DFCFW_forum'
 
     # 这里的顺序不能改变，redis中就靠顺序来定位callback。
@@ -25,11 +25,11 @@ class DFCFW_news(RedisCrawlSpider):
         Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/.*'), follow=True),
     )
 
-    redis_key = "DFCFW_forum:start_urls"
-    # start_urls = [
-    #     "http://guba.eastmoney.com/default,0_1.html",
-    #     "http://guba.eastmoney.com/default,99_1.html",
-    # ]
+    # redis_key = "DFCFW_forum:start_urls"
+    start_urls = [
+        "http://guba.eastmoney.com/default,0_1.html",
+        "http://guba.eastmoney.com/default,99_1.html",
+    ]
 
 
     def parse_forum(self,response):
@@ -46,7 +46,11 @@ class DFCFW_news(RedisCrawlSpider):
         def deal_read_count(response):
             _data = response.selector.re('var post_article = (\{.*?\})\;')
             data = _data[0]
-            datajson = json.loads(data)
+            try:
+                datajson = json.loads(data)
+            except Exception as e:
+                print(e)
+                return 0, 0,0, None
             stock_name = datajson["post"]["post_guba"]["stockbar_name"]
             stockbar_market = datajson["post"]["post_guba"]["stockbar_market"]
             publish_user_id = datajson["post"]["post_user"]["user_nickname"]
@@ -113,12 +117,12 @@ class DFCFW_news(RedisCrawlSpider):
         next_url = deal_next_page(response)
 
         item2_copy = deepcopy(item2)
-        # if next_url:
-        #     return scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
-        #         "item": item2_copy
-        #     }}, callback=self.parse_forum_next)
-        # else:
-        yield item2
+        if next_url:
+            yield scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
+                "item": item2_copy
+            }}, callback=self.parse_forum_next, priority=1)
+        else:
+            yield item2
         publish_user_href_next = deepcopy(item2_copy["publish_user_href"])
         del item2_copy
 
@@ -150,8 +154,8 @@ class DFCFW_news(RedisCrawlSpider):
             reply_item["replay_to"] = str(reply_to)
             reply_item["content"] = content
             yield reply_item
-        # return scrapy.Request(url=publish_user_href_next, headers=response_copy_headers, callback=self.parse_person)
-            # yield scrapy.Request(url=publish_user_info_href, headers=response_copy_headers, callback=self.parse_person)
+        # return scrapy.Request(url=publish_user_href_next, headers=response_copy_headers, callback=self.parse_person, priority=3)
+            yield scrapy.Request(url=publish_user_info_href, headers=response_copy_headers, callback=self.parse_person, priority=2)
 
 
     def parse_forum_next(self, response):
@@ -225,10 +229,10 @@ class DFCFW_news(RedisCrawlSpider):
 
         next_url = deal_next_page(response)
         response_copy_headers = deepcopy(response.request.headers)
-        # if next_url:
-        #     return scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
-        #         "item": last_item
-        #     }}, callback=self.parse_forum_next)
+        if next_url:
+            yield scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
+                "item": last_item
+            }}, callback=self.parse_forum_next, priority=2)
 
 
     def parse_person(self, response):
@@ -276,9 +280,78 @@ class DFCFW_news(RedisCrawlSpider):
         loader2.add_value("person_he_care", response.url + "/tafollow")
 
         item2 = loader2.load_item()
-        yield item2
-
+        response_copy_headers = deepcopy(response.request.headers)
+        yield scrapy.Request(url=item2["fans"], headers=response_copy_headers, meta={
+            "pre_data": {
+                "item": item2
+            }
+        }, callback=self.parse_person_fans, priority=3)
 
         # todo: fans,stock_focused_on 都需要在filepipeline中写ajax 请求吗，将剩下的字段补充完整。
+
+    def parse_person_fans(self, response):
+        pre_data = response.meta["pre_data"]
+        pre_item = pre_data["item"]
+
+        loader1 = ItemLoader(response=response, item=RawHtml())
+        loader1.add_value('board', 'DFCFW_iguba')
+        loader1.add_value('url', response.url)
+        loader1.add_value('datetime', datetime.datetime.now())
+        loader1.add_value('content', response.text)
+        loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+
+        item1 = loader1.load_item()
+        yield item1
+
+        del pre_item["fans"]
+        del pre_item["person_he_care"]
+
+        fanslist = response.xpath("//div[@class='tasidb2']//ul[@class='tasiderplist']//li/a/@href").extract()
+        fanslist = [x.strip().strip("/") for x in fanslist]
+        person_he_care = response.xpath("//div[@class='tasidb1']//ul[@class='tasiderplist']//li/a/@href").extract()
+        person_he_care = [x.strip().strip("/") for x in person_he_care]
+        pre_item["person_he_care"] = list(set(person_he_care))
+        pre_item["fans"] = list(set(fanslist))
+
+        headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+            "Cookie": "st_si=72747346219909; qgqp_b_id=96405d9f780665ad03d6328aed2f2b57; p_origin=https%3A%2F%2Fpassport2.eastmoney.com; ct=r-R8ChPJZmqF1WY8IFIigHY1y0Ii6aG7t81fUpRbYPTI7p4ST3qEeEZ-5zm7RkU8tctDvFuEguPZAuCwsxL-krS3IrmuOXf-Nf0ErcV9dPJv-iMKqrjXSH1aVQyULlHS12K008QorQQJjzf_8F-e7lYE8vhB2RZxeejVQMSYst4; ut=FobyicMgeV60R-wNFHdtrN17mhW5wDy4v9r6x1eY-wyk7BD3Q4qOgM5u27e--2Vz5DlQpGggkVwBNjS7W_QRxA8pE2WRgcRlN8g8sWEUcydlBcAo-fAhe6GdYEiUKU5cXaxmXK2-PdtHHbpdN-C_8naI7oopKJ4voq_MnOn5BPphm0WcCMVCF-4fhE-_81Q8Mh3kZQMaelEYkTD4K_gMOSoLu3VHmAkOFttp7mo6B7n9rcivNTTCVmOPZlumS1nO06LZC4rOFN3ARQ0pk-8czrDSXaInGiWE; pi=3564345589542852%3bm3564345589542852%3breboot1%3bUfUUbcfW0RZ6JgBqknIa7iXB6V0cK%2f7MSaPoGYn%2fcbebGw3tNd47%2fCmy6Hwq8U0KzZp50dXVCdGF82VMh8b7%2ffMqfvhlF3Hx8EZt18CiRG2A%2fvELeik%2bQm0iSvIueM2EGrpUoQKEq1paU%2bSwiXvijY5Ypucm0N02TahJFsmXSkmYV0nGFhhv4LxPvb2n5v3jwX6AR0v4%3b5BztCv8%2b5Rte5R%2fTSvHFFFYy2ifsGzgiw127Fx2bEKYxS5vnCEDeZJi4Cf6RUl%2fCEIytmrzw1DUuBNwPQUymUeDbS7I3oWW02QAfsKicZc%2bdHnL%2bMRehssQK2z67KBymOm%2fXXlLdAeygTa1Do%2f1YnEtPgssyZA%3d%3d; uidal=3564345589542852reboot1; sid=137744318; vtpst=|; st_asi=delete; st_pvi=06651445649880; st_sp=2019-06-06%2005%3A01%3A55; st_inirUrl=https%3A%2F%2Fwww.baidu.com%2Flink; st_sn=14; st_psi=20190606055018370-117005300001-8560595066",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
+        }
+        data = {
+            "action": "gettastock",
+            "type": "hs",
+            "uid": "4162005331760506"
+        }
+
+        if isinstance(pre_item["his_stock_count"], list):  # 莫名其妙
+            pre_item["his_stock_count"] = pre_item["his_stock_count"][0]
+        data["uid"] = pre_item["publish_user_id"]
+        yield scrapy.FormRequest(method="POST",
+                                  url=pre_item["his_stock"],
+                                  headers=headers,
+                                  formdata=data,
+                                  priority=4,
+                                  meta={
+                                      "pre_data": {
+                                          "item": pre_item
+                                      }
+                                  }, callback=self.parse_person_stocklist)
+
+    def parse_person_stocklist(self, response):
+        pre_data = response.meta["pre_data"]
+        pre_item = pre_data["item"]
+
+        del pre_item["his_stock"]
+        try:
+            stock_list = json.loads(response.text)
+            stock_list = [x.strip().split("|")[0] for x in stock_list["data"]["stklist"].split(",")]
+            pre_item["his_stock"] = deepcopy(stock_list)
+        except Exception as e:
+            print(e)
+            pre_item["his_stock"] = []
+        return pre_item
+
+
 
 

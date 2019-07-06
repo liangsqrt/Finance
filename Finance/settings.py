@@ -22,7 +22,7 @@ NEWSPIDER_MODULE = 'Finance.spiders'
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 64
 
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
@@ -72,8 +72,8 @@ ITEM_PIPELINES = {
    # 'scrapy_redis.pipelines.RedisPipeline': 300,
    # 'Finance.pipelines.SaveDataByMongo': 303,
    'Finance.pipelines.SaveDataByRedis': 303,
-   'Finance.pipelines.DFCFWFansPipeline': 302,
-   'Finance.pipelines.DFCFWStockPipeline': 301,
+   # 'Finance.pipelines.DFCFWFansPipeline': 302,
+   # 'Finance.pipelines.DFCFWStockPipeline': 301,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
