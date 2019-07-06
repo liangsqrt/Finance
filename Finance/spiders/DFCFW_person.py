@@ -13,7 +13,7 @@ from copy import deepcopy
 
 
 class DFCFW_news(CrawlSpider):
-    name = 'DFCFW_news'
+    name = 'DFCFW_person'
 
     # 这里的顺序不能改变，redis中就靠顺序来定位callback。
     rules = (
