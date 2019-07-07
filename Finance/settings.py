@@ -70,8 +70,8 @@ DEFAULT_REQUEST_HEADERS = {
 ITEM_PIPELINES = {
    # 'Finance.pipelines.DFCFWPipeline': 301,
    # 'scrapy_redis.pipelines.RedisPipeline': 300,
-   'Finance.pipelines.SaveDataByMongo': 303,
-   # 'Finance.pipelines.SaveDataByRedis': 303,
+   # 'Finance.pipelines.SaveDataByMongo': 303,
+   'Finance.pipelines.SaveDataByRedis': 303,
    'Finance.pipelines.DFCFWFansPipeline': 302,
    'Finance.pipelines.DFCFWStockPipeline': 301,
 }

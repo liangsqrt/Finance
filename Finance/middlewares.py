@@ -82,10 +82,10 @@ class HttpProxyMiddleware(object):
                 if not proxy_dict_raw:
                     break
                 else:
-                    proxy_dict=json.loads(proxy_dict_raw)
-                if proxy_dict['used_times']<300:
-                    proxy=proxy_dict['proxy']
-                    proxy_dict['used_times']+=1
+                    proxy_dict = json.loads(proxy_dict_raw)
+                if proxy_dict['used_times'] < 300:
+                    proxy = proxy_dict['proxy']
+                    proxy_dict['used_times'] += 1
                     # proxy_dict_json=json.dumps(proxy_dict)
                     # redis1.lpush(redis_proxy_list_name,proxy_dict_json)
                     proxy = 'http://' + proxy
@@ -109,18 +109,19 @@ class HttpProxyMiddleware(object):
     #
     #     return response
 
+
 class FinanceProxySaveMiddleware(object):
     # def process_response(self,request,response,spider):
     def process_spider_input(self, response, spider):
         try:
             if response.status not in [403, 429]:
-                proxy_dict=response.meta['info_proxy']
-                proxy_dict_json=json.dumps(proxy_dict)
-                redis1.lpush(redis_proxy_list_name,proxy_dict_json)
+                proxy_dict = response.meta['info_proxy']
+                proxy_dict_json = json.dumps(proxy_dict)
+                redis1.lpush(redis_proxy_list_name, proxy_dict_json)
             else:
                 return None
         except Exception as e:
-            print (e)
+            print(e)
 
 
     def process_spider_exception(self,response, exception, spider):

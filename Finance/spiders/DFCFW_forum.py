@@ -12,101 +12,24 @@ import json
 from copy import deepcopy
 
 
-class DFCFW_news(CrawlSpider):
+class DFCFW_news(RedisCrawlSpider):
     name = 'DFCFW_forum'
 
     # 这里的顺序不能改变，redis中就靠顺序来定位callback。
     rules = (
-        # Rule(LinkExtractor(allow=r'http\:\/\/finance\.eastmoney\.com\/\w.+\/\d*\.html'), callback='parse_content_finance', follow=False),
-        # Rule(LinkExtractor(allow=r'http\:\/\/stock\.eastmoney\.com\/news\/\d+\,\d.+\.html'), callback='parse_content_stock', follow=False),
+
         Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/news\,\w*?\,\d.+\.html'),
              callback='parse_forum', follow=True),
         Rule(LinkExtractor(allow=r'http\:\/\/iguba\.eastmoney\.com\/\d*'),
              callback="parse_person", follow=True),
         Rule(LinkExtractor(allow=r'http\:\/\/guba\.eastmoney\.com\/.*'), follow=True),
-
-
     )
-    start_urls = [
-        "http://guba.eastmoney.com/default,0_1.html",
-        "http://guba.eastmoney.com/default,99_1.html",
-    ]
 
-
-    def parse_content_finance(self,response):
-        """
-        没有存在的必要，每一个finance板块的文章，在guba里边，也会有一张gupa的帖子。
-        :param response:
-        :return:
-        """
-
-        def deal_publish_time(publish_time):
-            print(publish_time)
-            year_str=publish_time[0:4]
-            mounth_str=publish_time[4:6]
-            day_str=publish_time[6:8]
-
-            return year_str+'-'+mounth_str+'-'+day_str+' 00:00:00'
-
-        loader1 = ItemLoader(response=response, item=RawHtml())
-        loader1.add_value('board', 'DFCFW_guba')
-        loader1.add_value('url', response.url)
-        loader1.add_value('datetime', datetime.datetime.now())
-        loader1.add_value('content', response.text)
-        loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-
-        item1 = loader1.load_item()
-        yield item1
-
-        loader2 = ItemLoader(response=response, item=Forum())
-        topic_id = response.url.split
-        loader2.add_value("url", response.url)
-        loader2.add_value("stock_code", response.url.split(",")[1])
-        loader2.add_value("topic_id", topic_id)
-        loader2.add_xpath("publish_user_href", '//div[@id="zwconttbn"]//strong/a/@href', lambda x: x[0] if x else None)
-        loader2.add_xpath("publish_user", '//div[@id="zwconttbn"]//strong/a/text()', lambda x: x[0] if x else None)
-        loader2.add_xpath("user_device", response.xpath(
-            '//div[@class="zwfbtime"]//text()').extract_first("").strip().split(" ")[-1])
-        loader2.add_value(
-            "publish_time",
-            response.xpath('//div[@id="zwcontt"]//div[@class="zwfbtime"]'
-                           ).re("\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}")[0], deal_publish_time)
-        loader2.add_xpath("content", '//div[@id="post_content"]//text()', lambda x: "".join(x))
-        loader2.add_xpath("forum_age", '//div[@id="zwconttbn"]//div[@class="influence_wrap"]/@data-user_age',
-                          lambda x: x[0] if x else None)
-        loader2.add_xpath("influence", '//div[@id="zwconttbn"]//div[@class="influence_wrap"]/@data-user_level',
-                          lambda x: float(x[0]) if x else None)
-        # loader2.add_value("read_count", read_count)
-        # loader2.add_value("reply_count", replay_count)
-        item2 = loader2.load_item()
-
-
-    def parse_content_stock(self,response):
-        """
-        情况和finance类似，guba的数据都覆盖了他们。
-        :param response:
-        :return:
-        """
-
-        def deal_publish_time(publish_time):
-            print(publish_time)
-            year_str = publish_time[0:4]
-            mounth_str = publish_time[4:6]
-            day_str = publish_time[6:8]
-
-            return year_str+'-'+mounth_str+'-'+day_str+' 00:00:00'
-
-
-        loader1=ItemLoader(response=response, item=RawHtml())
-        loader1.add_value('board', 'DFCFW_stock')
-        loader1.add_value('mainurl', response.url)
-        loader1.add_value('timestrimp', int(time.time()*1000))
-        loader1.add_value('content', response.text)
-        loader1.add_value('publish_time', response.url.split(',')[-1].split('.')[0],deal_publish_time)
-        loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
-        loader1.add_value('id', hashlib.md5(response.url.encode('utf-8')).digest())
-        item1 = loader1.load_item()
-        return item1
+    redis_key = "DFCFW_forum:start_urls"
+    # start_urls = [
+    #     "http://guba.eastmoney.com/default,0_1.html",
+    #     "http://guba.eastmoney.com/default,99_1.html",
+    # ]
 
 
     def parse_forum(self,response):
@@ -130,6 +53,7 @@ class DFCFW_news(CrawlSpider):
             user_age = datajson["post"]["post_user"]["user_age"]
             user_first_en_name = datajson["post"]["post_user"]["user_first_en_name"]
             user_influ_level = datajson["post"]["post_user"]["user_influ_level"]
+
 
             read_count = datajson["post"]["post_click_count"]
             post_forward_count = datajson["post"]["post_forward_count"]
@@ -189,13 +113,14 @@ class DFCFW_news(CrawlSpider):
         next_url = deal_next_page(response)
 
         item2_copy = deepcopy(item2)
-        if next_url:
-            return scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
-                "item": item2_copy
-            }}, callback=self.parse_forum_next)
-        else:
-            yield item2
+        # if next_url:
+        #     return scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
+        #         "item": item2_copy
+        #     }}, callback=self.parse_forum_next)
+        # else:
+        yield item2
         publish_user_href_next = deepcopy(item2_copy["publish_user_href"])
+        del item2_copy
 
         for comment_div in response.xpath("//div[contains(@class, 'zwli clearfix')]"):
             reply_item = Replay()
@@ -225,8 +150,7 @@ class DFCFW_news(CrawlSpider):
             reply_item["replay_to"] = str(reply_to)
             reply_item["content"] = content
             yield reply_item
-        return scrapy.Request(url=publish_user_href_next, headers=response_copy_headers, callback=self.parse_person)
-
+        # return scrapy.Request(url=publish_user_href_next, headers=response_copy_headers, callback=self.parse_person)
             # yield scrapy.Request(url=publish_user_info_href, headers=response_copy_headers, callback=self.parse_person)
 
 
@@ -301,10 +225,10 @@ class DFCFW_news(CrawlSpider):
 
         next_url = deal_next_page(response)
         response_copy_headers = deepcopy(response.request.headers)
-        if next_url:
-            return scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
-                "item": last_item
-            }}, callback=self.parse_forum_next)
+        # if next_url:
+        #     return scrapy.Request(url=next_url, headers=response_copy_headers, meta={"pre_data": {
+        #         "item": last_item
+        #     }}, callback=self.parse_forum_next)
 
 
     def parse_person(self, response):
@@ -356,10 +280,5 @@ class DFCFW_news(CrawlSpider):
 
 
         # todo: fans,stock_focused_on 都需要在filepipeline中写ajax 请求吗，将剩下的字段补充完整。
-
-
-
-
-
 
 

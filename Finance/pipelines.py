@@ -79,7 +79,7 @@ class DFCFWFansPipeline(MediaPipeline):
     def get_media_requests(self, item, info):
         stock_url = item["fans"]
         headers = deepcopy(self.headers)
-        return scrapy.Request(url=stock_url, headers=headers, method="GET")
+        return scrapy.Request(url=stock_url, headers=headers, method="GET", priority=5, flags="test1")
 
     def item_completed(self, results, item, info):
         del item["fans"]
@@ -128,7 +128,7 @@ class DFCFWStockPipeline(MediaPipeline):
         if isinstance(item["his_stock_count"], list):  # 莫名其妙
             item["his_stock_count"] = item["his_stock_count"][0]
         self.data["uid"] = item["publish_user_id"]
-        yield scrapy.FormRequest(url=stock_url, headers=self.headers, method="post", formdata=self.data)
+        return scrapy.FormRequest(url=stock_url, headers=self.headers, method="post", formdata=self.data)
 
     def item_completed(self, results, item, info):
         del item["his_stock"]
@@ -137,7 +137,7 @@ class DFCFWStockPipeline(MediaPipeline):
             try:
                 stock_list = json.loads(response.text)
                 stock_list = [x.strip().split("|")[0] for x in stock_list["data"]["stklist"].split(",")]
-                item["his_stock"] = stock_list
+                item["his_stock"] = deepcopy(stock_list)
             except Exception as e:
                 print(e)
         return item
@@ -166,7 +166,7 @@ class DFCFWPersonHeCarePipeline(MediaPipeline):
 
     def get_media_requests(self, item, info):
         person_her_care = item["person_he_care"]
-        yield scrapy.FormRequest(url=person_her_care, headers=self.headers, method="GET")
+        return scrapy.FormRequest(url=person_her_care, headers=self.headers, method="GET")
 
     def item_completed(self, results, item, info):
         del item["person_he_care"]
