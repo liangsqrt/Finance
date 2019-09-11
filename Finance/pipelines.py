@@ -44,8 +44,9 @@ class SaveDataByMongo(object):
 class SaveDataByRedis(object):
     def process_item(self, item, spider):
         try:
-            item_dumped = pickle.dumps(item)
-            self.redis.lpush("all_data", item_dumped)
+            if not isinstance(item, RawHtml):
+                item_dumped = pickle.dumps(item)
+                self.redis.lpush("all_data", item_dumped)
         except Exception as e:
             print(e)
         # return item

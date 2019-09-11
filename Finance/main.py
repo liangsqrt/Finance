@@ -1,5 +1,5 @@
 from scrapy.cmdline import execute
-from Finance.settings import *
+# from Finance.settings import *
 import redis
 
 

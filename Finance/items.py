@@ -11,6 +11,7 @@ from mongoengine.fields import *
 from mongoengine import connect
 from scrapy.loader.processors import TakeFirst
 
+
 connect('东方财富网', host="192.168.31.107", port=27017)
 
 
