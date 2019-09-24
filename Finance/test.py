@@ -1,32 +1,13 @@
-#_*_coding:utf-8_*_
-import pymongo
-import time
+from items import *
+import datetime
 
 
 
-
-
-client=pymongo.MongoClient('localhost',27017)
-col=client['Finance']
-db=col['DFCFW']
-
-while True:
-    client = pymongo.MongoClient('localhost', 27017)
-    col = client['Finance']
-    db = col['DFCFW10_4']
-    print (db.find().count())
-
-
-
-    client.close()
-    time.sleep(2)
-
-
-# for one_item in db.find():
-#     if len(one_item['reply_nodes'])>30:
-#         print one_item['url']
-
-
-# for i in db.find({'url':'http://guba.eastmoney.com/news,000839,689176541.html'}):
-#     for j in i['reply_nodes']:
-#         print '--------',j['content']
+rowhtml1 = RawHtmlMongo()
+rowhtml1.board = "test1"
+rowhtml1.url = "http://www.baidu.com"
+rowhtml1.datetime = datetime.datetime.now()
+rowhtml1.content = "test1"
+rowhtml1.publish_time = datetime.datetime.now()
+rowhtml1.spider_time = datetime.datetime.now()
+rowhtml1.save()

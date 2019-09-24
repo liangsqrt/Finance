@@ -98,9 +98,7 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 
-# Finance_DFCFW_tieba_path='E:/data_ll'#/media/liang/新加卷3
-Finance_DFCFW_tieba_path='/media/passager/新加卷/2/DFCFW_HTML'
-# REDIS_HOST = '127.0.0.1'
+REDIS_HOST = '127.0.0.1'
 REDIS_HOST = '192.168.31.169'
 REDIS_PORT = '6379'
 REDIS_PARAMS = {
@@ -110,7 +108,24 @@ REDIS_PARAMS = {
 
 
 SCHEDULER="scrapy_redis.scheduler.Scheduler"
-DUPEFILTER_CLASS="scrapy_redis.dupefilter.RFPDupeFilter"
+DUPEFILTER_CLASS="scrapy_redis.bloom_dupefilter.RFPDupeFilter"
+
+# FILTER_HOST = '192.168.31.169'
+# FILTER_PORT = 6379
+# FILTER_DB = 4
+# REDIS_PARAMS = {
+#     'host': '192.168.31.169',
+#     'port': 6379,
+#     'password': 'asd123456',
+# }
+#
+# SCHEDULER="scrapy_redis_bloomfilter.scheduler.Scheduler"
+# SCHEDULER_PERSIST = True
+# SCHEDULER_QUEUE_CLASS = 'scrapy_redis_bloomfilter.queue.SpiderPriorityQueue'
+# DUPEFILTER_CLASS="scrapy_redis_bloomfilter.dupefilter.RFPDupeFilter"
+BLOOMFILTER_BIT = 35 # 37对应20g左右大小。
+BLOOMFILTER_HASH_NUMBER = 8
+
 
 
 REACTOR_THREADPOOL_MAXSIZE = 100

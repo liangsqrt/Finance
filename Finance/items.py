@@ -105,7 +105,7 @@ class Replay(MongoItem):
 
 class RawHtmlMongo(Document):
     board = StringField()
-    url = URLField()
+    url = URLField(unique=True)
     datetime = DateTimeField()
     content = StringField()
     publish_time = DateTimeField()
@@ -127,7 +127,7 @@ class ForumMongo(Document):
     publish_user_href = URLField()
     user_device = StringField()  # from mobile phone
     topic_id = IntField()
-    url = URLField()
+    url = URLField(unique_with="topic_id")
     read_count = IntField()
     reply_count = IntField()
     stock_code = StringField()
@@ -150,7 +150,7 @@ class ReplayMongo(Document):
     publish_user = StringField()
     publish_time = DateTimeField()
     publish_user_href = StringField()
-    topic_id = StringField()  # 观点id
+    topic_id = StringField(unique_with=["replay_id", "publish_user"])  # 观点id
     influence = FloatField()
     forum_age = StringField()
     replay_to = StringField()
@@ -167,7 +167,7 @@ class ReplayMongo(Document):
 class PublisherInfoMongo(Document):
     publish_user_id = StringField()
     publish_user_name = StringField()
-    publish_user_href = URLField()
+    publish_user_href = URLField(unique_with="publish_user_href")
     # zixuan_num = IntField()
     # guanzhu_num = IntField()
     fans = ListField()  # 他的粉丝

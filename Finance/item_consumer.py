@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2019/6/4 0004 16:27
 # @Author  : LiangLiang
-# @Site    : 
+# @Site    :
 # @File    : item_consumer.py
 # @Software: PyCharm
 from scrapy.utils.project import get_project_settings
@@ -202,13 +202,14 @@ class MongoConsumer(object):
         while True:
             item = self.redis.lpop("all_data")
             if not item:
+                print("is waiting")
                 time.sleep(1)
                 gauge.labels("wait", "wait", "wait").set(1)
                 continue
             gauge.labels("wait", "wait", "wait").set(0)
             item = pickle.loads(item)
             try:
-                print("si saving")
+                print("is saving")
                 save_data_to_mongo_pipeline.process_item(item, virtual_spider)
                 print("saving down")
                 print("saving down")
@@ -221,6 +222,14 @@ class MongoConsumer(object):
 if __name__ == '__main__':
     app.sqlcomsumenr = MongoConsumer()
     app.sqlcomsumenr.run()
-    app.run(host="0.0.0.0",port=6802)
+    port = 6802
+    while True:
+        try:
+            app.run(host="0.0.0.0",port=port)
+            break
+        except Exception as e:
+            print(e)
+            port+=1
+
 
 
