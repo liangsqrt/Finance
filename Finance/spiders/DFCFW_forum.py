@@ -80,16 +80,16 @@ class DFCFW_news(CrawlSpider):
 
         #  保存原始网页信息
         response_copy_headers = deepcopy(response.request.headers)
-        loader1 = ItemLoader(response=response, item=RawHtml())
-        loader1.add_value('board', 'DFCFW_guba')
-        loader1.add_value('url', response.url)
-        loader1.add_value('datetime', datetime.datetime.now())
-        loader1.add_value('content', response.text)
-        # loader1.add_value('publish_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-        loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-
-        item1 = loader1.load_item()
-        yield item1
+        # loader1 = ItemLoader(response=response, item=RawHtml())
+        # loader1.add_value('board', 'DFCFW_guba')
+        # loader1.add_value('url', response.url)
+        # loader1.add_value('datetime', datetime.datetime.now())
+        # loader1.add_value('content', response.text)
+        # # loader1.add_value('publish_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+        # loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+        #
+        # item1 = loader1.load_item()
+        # yield item1
 
         #  解析此条贴吧的详细信息。
         read_count, replay_count, follow_count, topic_id = deal_read_count(response)
@@ -98,18 +98,18 @@ class DFCFW_news(CrawlSpider):
         loader2.add_value("stock_code", response.url.split(",")[1])
         loader2.add_value("topic_id", topic_id)
         loader2.add_xpath("publish_user_href", '//div[@id="zwconttbn"]//strong/a/@href', lambda x: x[0] if x else None)
-        loader2.add_xpath("publish_user", '//div[@id="zwconttbn"]//strong/a/text()', lambda x: x[0] if x else None)
+        loader2.add_xpath("publish_user", '//div[@id="zwconttbn"]//strong/a//text()', lambda x: x[0] if x else None)
         loader2.add_value("user_device", response.xpath(
             '//div[@class="zwfbtime"]//text()').extract_first("").strip().split(" ")[-1])
         loader2.add_value(
             "publish_time",
             response.xpath('//div[@id="zwcontt"]//div[@class="zwfbtime"]'
                                            ).re("\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}")[0], deal_publish_time)
-        loader2.add_xpath("content", '//div[@id="post_content"]//text()', lambda x: "".join(x))
+        loader2.add_xpath("content", '//div[@id="post_content"]//text()', lambda x: "".join([y.strip() for y in x]))
         loader2.add_xpath("forum_age", '//div[@id="zwconttbn"]//div[@class="influence_wrap"]/@data-user_age',
                           lambda x: x[0] if x else None)
         loader2.add_xpath("influence", '//div[@id="zwconttbn"]//div[@class="influence_wrap"]/@data-user_level',
-                          lambda x: float(x[0]) if x else None)
+                          lambda x: float(x[0]) if x else 0)
         loader2.add_value("read_count", read_count)
         loader2.add_value("reply_count", replay_count)
         item2 = loader2.load_item()
@@ -145,7 +145,7 @@ class DFCFW_news(CrawlSpider):
             comment_id = comment_div.xpath("./@data-huifuid").extract_first()
             _content = comment_div.xpath('.//div[contains(@class, "stockcodec")]//div[@class="short_text"]//text()').extract()
             reply_to = comment_div.xpath(".//div[@class='zwlitalkbox clearfix']/div[@class='zwlitalkboxtext ']/@data-huifuid").extract_first(default=None)
-            content = "".join(_content)
+            content = "".join(x.strip() for x in _content)
             reply_item["publish_user_href"] = publish_user_info_href
             reply_item["publish_time"] = publish_time
             reply_item["topic_id"] = str(topic_id)
@@ -153,7 +153,7 @@ class DFCFW_news(CrawlSpider):
             reply_item["replay_to"] = str(reply_to)
             reply_item["content"] = content
             yield reply_item
-        # return scrapy.Request(url=publish_user_href_next, headers=response_copy_headers, callback=self.parse_person, priority=3)
+            # return scrapy.Request(url=publish_user_href_next, headers=response_copy_headers, callback=self.parse_person, priority=3)
             yield scrapy.Request(url=publish_user_info_href, headers=response_copy_headers, callback=self.parse_person, priority=2)
 
 
@@ -239,47 +239,46 @@ class DFCFW_news(CrawlSpider):
         # datajson = json.loads(jsdata[0])
 
         #  保存原始网页信息
-        loader1 = ItemLoader(response=response, item=RawHtml())
-        loader1.add_value('board', 'DFCFW_iguba')
-        loader1.add_value('url', response.url)
-        loader1.add_value('datetime', datetime.datetime.now())
-        loader1.add_value('content', response.text)
-        loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-
-        item1 = loader1.load_item()
-        yield item1
+        # loader1 = ItemLoader(response=response, item=RawHtml())
+        # loader1.add_value('board', 'DFCFW_iguba')
+        # loader1.add_value('url', response.url)
+        # loader1.add_value('datetime', datetime.datetime.now())
+        # loader1.add_value('content', response.text)
+        # loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+        #
+        # item1 = loader1.load_item()
+        # yield item1
 
         loader2 = ItemLoader(response=response, item=PublisherInfo())
         loader2.add_value("publish_user_href", response.url)
         try:
-            loader2.add_xpath("publish_user_name", '//div[@class="taname"]/text()', lambda x: x[0].strip())
+            loader2.add_xpath("publish_user_name", '//div[@id="others"]//div[@class="others_username"]//text()', lambda x: x[0].strip())
         except Exception as e:
             print(e)
-        loader2.add_xpath("influence", "//div[@id='influence']//span/@data-influence", lambda x: int(x[0]) if x else 0)
-        loader2.add_xpath("publish_user_id",
-                          "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/../../a/@href",
-                          lambda x: x[0].strip("/").strip("/fans") if x else "")
-        loader2.add_value("his_stock_count",
-                          response.xpath("//div[@class='gbbody']//div[@class='tanums']//td[1]/a/em/text()").extract_first(),
-                          lambda x: int(x[0].strip()) if x else 0)
+        loader2.add_xpath("influence", '//p[@id="influence"]//span[@id="influ_star"]/@class', lambda x: int(x[0].strip('stars')) if x else 0)
+        loader2.add_value("publish_user_id",
+                          response.url.split("/")[-1].strip(),)
+        # loader2.add_value("his_stock_count",
+        #                   response.xpath("//div[@class='gbbody']//div[@class='tanums']//td[1]/a/em/text()").extract_first(),
+        #                   lambda x: int(x[0].strip()) if x else 0)
         loader2.add_xpath("fans_count",
-                          "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'fans')]/em/text()",
+                          '//div[@class="others_fans"]//a[@id="tafansa"]//span/text()',
                           lambda x: int(x[0].strip()) if x else 0)
         loader2.add_xpath("person_he_care_count",
-                          "//div[@class='gbbody']//div[@class='tanums']//td/a[contains(@href, 'tafollow')]/em/text()",
+                          '//div[@class="others_fans"]//a[@id="tafollownav"]//span/text()',
                           lambda x: int(x[0].strip()) if x else 0)
         loader2.add_value("visit_count",
-                          response.xpath('//div[@class="sumfw"]//span[contains(text(), "次")]/text()').extract_first(),
-                          lambda x: x[0].strip("次") if x else 0)
-        loader2.add_value("register_time", response.xpath("//div[@id='influence']//span[@style]").re("\((.*)\)"))
-        loader2.add_value("forum_age", response.xpath("//div[@id='influence']//span/text()").extract_first(0))
-        loader2.add_xpath("attention_field", '//div[@id="influence"]/a[@target]/text()')
-        loader2.add_xpath("attention_field_url", '//div[@id="influence"]/a[@target]/@href')
-        loader2.add_xpath("abstract", '//div[@class="taintro"]/text()')
+                          response.xpath('//div[@class="others_info"]//span[@class="orange"][1]/text()').extract_first(),
+                          lambda x: int(x[0].strip("次")) if x else 0)
+        # loader2.add_value("register_time", response.xpath("//div[@id='influence']//span[@style]").re("\((.*)\)"))
+        loader2.add_value("forum_age", response.xpath('//div[@class="others_level"]//p[contains(text(), "吧龄")]/span/text()').extract_first(0))
+        # loader2.add_xpath("attention_field", '//div[@id="influence"]/a[@target]/text()')
+        # loader2.add_xpath("attention_field_url", '//div[@id="influence"]/a[@target]/@href')
+        loader2.add_xpath("abstract", '//div[@class="others_content"]//span[@class="icon_ta_jj"]/../span[2]/text()', lambda x: x[0].strip() if x else "")
 
-        loader2.add_value("fans", response.url+"/fans")
-        loader2.add_value("his_stock", "http://iguba.eastmoney.com/interf/stocklist.aspx")
-        loader2.add_value("person_he_care", response.url + "/tafollow")
+        loader2.add_value("fans", "http://i.eastmoney.com/api/ta/Tafans?p=1&ps=20&uid={}".format(response.url.split("/")[-1].strip()))
+        loader2.add_value("his_stock", "http://i.eastmoney.com/api/ta/mystock?f=gshdll&top=100&u={}".format(response.url.split("/")[-1].strip()))
+        loader2.add_value("person_he_care", "http://i.eastmoney.com/api/ta/Tafollow?p=1&ps=20&uid={}".format(str(response.url.split("/")[-1].strip())))
 
         item2 = loader2.load_item()
         response_copy_headers = deepcopy(response.request.headers)
@@ -295,64 +294,107 @@ class DFCFW_news(CrawlSpider):
         pre_data = response.meta["pre_data"]
         pre_item = pre_data["item"]
 
-        loader1 = ItemLoader(response=response, item=RawHtml())
-        loader1.add_value('board', 'DFCFW_iguba')
-        loader1.add_value('url', response.url)
-        loader1.add_value('datetime', datetime.datetime.now())
-        loader1.add_value('content', response.text)
-        loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+        # loader1 = ItemLoader(response=response, item=RawHtml())
+        # loader1.add_value('board', 'DFCFW_iguba')
+        # loader1.add_value('url', response.url)
+        # loader1.add_value('datetime', datetime.datetime.now())
+        # loader1.add_value('content', response.text)
+        # loader1.add_value('spider_time', time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+        #
+        # item1 = loader1.load_item()
+        # yield item1
+        if not isinstance(pre_item["fans"], list):
+            del pre_item["fans"]
+            pre_item["fans"] = []
+        jsdata = json.loads(response.body)
 
-        item1 = loader1.load_item()
-        yield item1
-
-        del pre_item["fans"]
-        del pre_item["person_he_care"]
-
-        fanslist = response.xpath("//div[@class='tasidb2']//ul[@class='tasiderplist']//li/a/@href").extract()
-        fanslist = [x.strip().strip("/") for x in fanslist]
-        person_he_care = response.xpath("//div[@class='tasidb1']//ul[@class='tasiderplist']//li/a/@href").extract()
-        person_he_care = [x.strip().strip("/") for x in person_he_care]
-        pre_item["person_he_care"] = list(set(person_he_care))
-        pre_item["fans"] = list(set(fanslist))
+        fanslist = jsdata["data"]["re"]
+        for _fan in fanslist:
+            pre_item["fans"].append(_fan)
 
         headers = {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
             "Cookie": "st_si=72747346219909; qgqp_b_id=96405d9f780665ad03d6328aed2f2b57; p_origin=https%3A%2F%2Fpassport2.eastmoney.com; ct=r-R8ChPJZmqF1WY8IFIigHY1y0Ii6aG7t81fUpRbYPTI7p4ST3qEeEZ-5zm7RkU8tctDvFuEguPZAuCwsxL-krS3IrmuOXf-Nf0ErcV9dPJv-iMKqrjXSH1aVQyULlHS12K008QorQQJjzf_8F-e7lYE8vhB2RZxeejVQMSYst4; ut=FobyicMgeV60R-wNFHdtrN17mhW5wDy4v9r6x1eY-wyk7BD3Q4qOgM5u27e--2Vz5DlQpGggkVwBNjS7W_QRxA8pE2WRgcRlN8g8sWEUcydlBcAo-fAhe6GdYEiUKU5cXaxmXK2-PdtHHbpdN-C_8naI7oopKJ4voq_MnOn5BPphm0WcCMVCF-4fhE-_81Q8Mh3kZQMaelEYkTD4K_gMOSoLu3VHmAkOFttp7mo6B7n9rcivNTTCVmOPZlumS1nO06LZC4rOFN3ARQ0pk-8czrDSXaInGiWE; pi=3564345589542852%3bm3564345589542852%3breboot1%3bUfUUbcfW0RZ6JgBqknIa7iXB6V0cK%2f7MSaPoGYn%2fcbebGw3tNd47%2fCmy6Hwq8U0KzZp50dXVCdGF82VMh8b7%2ffMqfvhlF3Hx8EZt18CiRG2A%2fvELeik%2bQm0iSvIueM2EGrpUoQKEq1paU%2bSwiXvijY5Ypucm0N02TahJFsmXSkmYV0nGFhhv4LxPvb2n5v3jwX6AR0v4%3b5BztCv8%2b5Rte5R%2fTSvHFFFYy2ifsGzgiw127Fx2bEKYxS5vnCEDeZJi4Cf6RUl%2fCEIytmrzw1DUuBNwPQUymUeDbS7I3oWW02QAfsKicZc%2bdHnL%2bMRehssQK2z67KBymOm%2fXXlLdAeygTa1Do%2f1YnEtPgssyZA%3d%3d; uidal=3564345589542852reboot1; sid=137744318; vtpst=|; st_asi=delete; st_pvi=06651445649880; st_sp=2019-06-06%2005%3A01%3A55; st_inirUrl=https%3A%2F%2Fwww.baidu.com%2Flink; st_sn=14; st_psi=20190606055018370-117005300001-8560595066",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
         }
-        data = {
-            "action": "gettastock",
-            "type": "hs",
-            "uid": "4162005331760506"
-        }
+        if len(pre_item["fans"]) < jsdata["data"]["count"]:
+            url_s_1 = response.url.split("p=")
+            this_page_num = url_s_1[-1].split("&")[0]
+            this_page_num = str(int(this_page_num) + 1)
+            next_page_url = url_s_1[0]+ "p=" + this_page_num + "&" + "&".join(url_s_1[-1].split("&")[1:])
+            yield scrapy.Request(url=next_page_url,
+                                      headers=headers,
+                                      priority=4,
+                                      meta={
+                                          "pre_data": {
+                                              "item": pre_item
+                                          }
+                                      }, callback=self.parse_person_fans)
+        else:
+            yield scrapy.Request(
+                url=pre_item["person_he_care"],
+                headers=headers,
+                priority=5,
+                meta={
+                  "pre_data": {
+                      "item": pre_item
+                  }
+              }, callback=self.parse_person_he_care)
 
-        if isinstance(pre_item["his_stock_count"], list):  # 莫名其妙
-            pre_item["his_stock_count"] = pre_item["his_stock_count"][0]
-        data["uid"] = pre_item["publish_user_id"]
-        yield scrapy.FormRequest(method="POST",
-                                  url=pre_item["his_stock"],
-                                  headers=headers,
-                                  formdata=data,
-                                  priority=4,
-                                  meta={
+    def parse_person_he_care(self, response):
+        pre_data = response.meta["pre_data"]
+        pre_item = pre_data["item"]
+        if not isinstance(pre_item["person_he_care"], list):
+            del pre_item["person_he_care"]
+            pre_item["person_he_care"] = []
+
+        jsdata = json.loads(response.body)
+
+        person_he_care_list = jsdata["data"]["re"]
+        for _person in person_he_care_list:
+            pre_item["person_he_care"].append(_person)
+
+        headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+            "Cookie": "st_si=72747346219909; qgqp_b_id=96405d9f780665ad03d6328aed2f2b57; p_origin=https%3A%2F%2Fpassport2.eastmoney.com; ct=r-R8ChPJZmqF1WY8IFIigHY1y0Ii6aG7t81fUpRbYPTI7p4ST3qEeEZ-5zm7RkU8tctDvFuEguPZAuCwsxL-krS3IrmuOXf-Nf0ErcV9dPJv-iMKqrjXSH1aVQyULlHS12K008QorQQJjzf_8F-e7lYE8vhB2RZxeejVQMSYst4; ut=FobyicMgeV60R-wNFHdtrN17mhW5wDy4v9r6x1eY-wyk7BD3Q4qOgM5u27e--2Vz5DlQpGggkVwBNjS7W_QRxA8pE2WRgcRlN8g8sWEUcydlBcAo-fAhe6GdYEiUKU5cXaxmXK2-PdtHHbpdN-C_8naI7oopKJ4voq_MnOn5BPphm0WcCMVCF-4fhE-_81Q8Mh3kZQMaelEYkTD4K_gMOSoLu3VHmAkOFttp7mo6B7n9rcivNTTCVmOPZlumS1nO06LZC4rOFN3ARQ0pk-8czrDSXaInGiWE; pi=3564345589542852%3bm3564345589542852%3breboot1%3bUfUUbcfW0RZ6JgBqknIa7iXB6V0cK%2f7MSaPoGYn%2fcbebGw3tNd47%2fCmy6Hwq8U0KzZp50dXVCdGF82VMh8b7%2ffMqfvhlF3Hx8EZt18CiRG2A%2fvELeik%2bQm0iSvIueM2EGrpUoQKEq1paU%2bSwiXvijY5Ypucm0N02TahJFsmXSkmYV0nGFhhv4LxPvb2n5v3jwX6AR0v4%3b5BztCv8%2b5Rte5R%2fTSvHFFFYy2ifsGzgiw127Fx2bEKYxS5vnCEDeZJi4Cf6RUl%2fCEIytmrzw1DUuBNwPQUymUeDbS7I3oWW02QAfsKicZc%2bdHnL%2bMRehssQK2z67KBymOm%2fXXlLdAeygTa1Do%2f1YnEtPgssyZA%3d%3d; uidal=3564345589542852reboot1; sid=137744318; vtpst=|; st_asi=delete; st_pvi=06651445649880; st_sp=2019-06-06%2005%3A01%3A55; st_inirUrl=https%3A%2F%2Fwww.baidu.com%2Flink; st_sn=14; st_psi=20190606055018370-117005300001-8560595066",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36",
+        }
+        if len(pre_item["person_he_care"]) < jsdata["data"]["count"]:
+            url_s_1 = response.url.split("p=")
+            this_page_num = url_s_1[-1].split("&")[0]
+            this_page_num = str(int(this_page_num) + 1)
+            next_page_url = url_s_1[0] + "p=" + this_page_num + "&" + "&".join(url_s_1[-1].split("&")[1:])
+            yield scrapy.Request(url=next_page_url, headers=headers, priority=5,
+                                      meta={
+                                          "pre_data": {
+                                              "item": pre_item
+                                          }
+                                      }, callback=self.parse_person_he_care)
+        else:
+            yield scrapy.Request(url=pre_item["his_stock"],
+                                    headers=headers,
+                                    priority=6,
+                                    meta={
                                       "pre_data": {
                                           "item": pre_item
                                       }
-                                  }, callback=self.parse_person_stocklist)
+                                  }, callback=self.parse_his_stock)
 
-    def parse_person_stocklist(self, response):
+
+
+    def parse_his_stock(self, response):
         pre_data = response.meta["pre_data"]
         pre_item = pre_data["item"]
-
-        del pre_item["his_stock"]
         try:
-            stock_list = json.loads(response.text)
-            stock_list = [x.strip().split("|")[0] for x in stock_list["data"]["stklist"].split(",")]
-            pre_item["his_stock"] = deepcopy(stock_list)
+            jsdata = json.loads(response.body)
+            codedata = jsdata["mystock"]["data"]
+            stock_list = [x.split(".") for x in codedata["order"].split(",")]
+            pre_item["his_stock"] = stock_list
         except Exception as e:
             print(e)
-            pre_item["his_stock"] = []
-        return pre_item
+        pre_item["fans_count"] = len(pre_item["fans"]) if pre_item["fans"] else 0
+
+        yield pre_item
 
 
 

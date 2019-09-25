@@ -165,9 +165,9 @@ class ReplayMongo(Document):
 
 
 class PublisherInfoMongo(Document):
-    publish_user_id = StringField()
+    publish_user_id = StringField(unique=True)
     publish_user_name = StringField()
-    publish_user_href = URLField(unique_with="publish_user_href")
+    publish_user_href = URLField()
     # zixuan_num = IntField()
     # guanzhu_num = IntField()
     fans = ListField()  # 他的粉丝
